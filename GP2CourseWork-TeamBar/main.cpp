@@ -43,9 +43,9 @@ SDL_Window * window = NULL;
 SDL_GLContext glcontext = NULL;
 
 //Window Width
-const int WINDOW_WIDTH = 640;
+const int WINDOW_WIDTH = 1240;
 //Window Height
-const int WINDOW_HEIGHT = 480;
+const int WINDOW_HEIGHT = 800;
 
 bool running = true;
 
@@ -197,33 +197,118 @@ void Initialise()
 		(*iter)->init();
 	}
 
+	//List of models being used in the scene
+	//Will want to put all of these into an array for convience
+	std::string stationModel = ASSET_PATH + MODEL_PATH + "station.fbx";
+	std::string sunModel = ASSET_PATH + MODEL_PATH + "sun.fbx";
+	std::string earthModel = ASSET_PATH + MODEL_PATH + "earth.fbx";
+	std::string moonModel = ASSET_PATH + MODEL_PATH + "moon.fbx";
+	std::string shipModel = ASSET_PATH + MODEL_PATH + "ship.fbx";
+	std::string gateModel = ASSET_PATH + MODEL_PATH + "gate.fbx";
+	std::string satelliteModel = ASSET_PATH + MODEL_PATH + "satellite.fbx";
 
-	std::string modelPath = ASSET_PATH + MODEL_PATH + "sun.fbx";
-	GameObject * go = loadFBXFromFile(modelPath);
-	/*for (int i = 0; i < go->getChildCount(); i++)
+	//Model and Texture for the space station
+	GameObject * go = loadFBXFromFile(stationModel);
+	for (int i = 0; i < go->getChildCount(); i++)
 	{
-	Material * material = new Material();
-	material->init();
-	std::string vsPath = ASSET_PATH + SHADER_PATH + "/BumpmappingVS.glsl";
-	std::string fsPath = ASSET_PATH + SHADER_PATH + "/BumpmappingFS.glsl";
-	material->loadShader(vsPath, fsPath);
-
-	std::string diffTexturePath = ASSET_PATH + TEXTURE_PATH + "/armoredrecon_diff.png";
-	material->loadDiffuseMap(diffTexturePath);
-
-	std::string specTexturePath = ASSET_PATH + TEXTURE_PATH + "/armoredrecon_spec.png";
-	material->loadSpecularMap(specTexturePath);
-
-	std::string bumpTexturePath = ASSET_PATH + TEXTURE_PATH + "/armoredrecon_N.png";
-	material->loadBumpMap(bumpTexturePath);
-
-	go->getChild(i)->setMaterial(material);
+		Material * material = new Material();
+		material->init();
+		std::string vsPath = ASSET_PATH + SHADER_PATH + "/DirectionalLightTextureVS.glsl";
+		std::string fsPath = ASSET_PATH + SHADER_PATH + "/DirectionalLightTextureFS.glsl";
+		material->loadShader(vsPath, fsPath);
+		std::string diffTexturePath = ASSET_PATH + TEXTURE_PATH + "/station_diff.png";
+		material->loadDiffuseMap(diffTexturePath);
+		std::string bumpTexturePath = ASSET_PATH + TEXTURE_PATH + "/station_norm.png";
+		material->loadBumpMap(bumpTexturePath);
+		go->getChild(i)->setMaterial(material);
 	}
-	go->getTransform()->setPosition(0.0f, -2.0f, -6.0f);
+	go->getTransform()->setPosition(0.0f, 0.0f, -50.0f);
 	go->getTransform()->setRotation(0.0f, -40.0f, 0.0f);
-	displayList.push_back(go);*/
+	go->getTransform()->setScale(0.1f, 0.1f, 0.1f);
+	displayList.push_back(go);
 
-	go = loadFBXFromFile(modelPath);
+	//Model and texture for Gate 1
+	go = loadFBXFromFile(gateModel);
+	for (int i = 0; i < go->getChildCount(); i++)
+	{
+		Material * material = new Material();
+		material->init();
+		std::string vsPath = ASSET_PATH + SHADER_PATH + "/DirectionalLightTextureVS.glsl";
+		std::string fsPath = ASSET_PATH + SHADER_PATH + "/DirectionalLightTextureFS.glsl";
+		material->loadShader(vsPath, fsPath);
+		std::string diffTexturePath = ASSET_PATH + TEXTURE_PATH + "/gate_diff.png";
+		material->loadDiffuseMap(diffTexturePath);
+		std::string bumpTexturePath = ASSET_PATH + TEXTURE_PATH + "/gate_norm.png";
+		material->loadBumpMap(bumpTexturePath);
+		go->getChild(i)->setMaterial(material);
+	}
+	go->getTransform()->setPosition(10.0f, 0.0f, -25.0f);
+	go->getTransform()->setRotation(0.0f, 45.0f, 0.0f);
+	go->getTransform()->setScale(0.1f, 0.1f, 0.1f);
+	displayList.push_back(go);
+
+	//Model and texture for Gate 2
+	go = loadFBXFromFile(gateModel);
+	for (int i = 0; i < go->getChildCount(); i++)
+	{
+		Material * material = new Material();
+		material->init();
+		std::string vsPath = ASSET_PATH + SHADER_PATH + "/DirectionalLightTextureVS.glsl";
+		std::string fsPath = ASSET_PATH + SHADER_PATH + "/DirectionalLightTextureFS.glsl";
+		material->loadShader(vsPath, fsPath);
+		std::string diffTexturePath = ASSET_PATH + TEXTURE_PATH + "/gate_diff.png";
+		material->loadDiffuseMap(diffTexturePath);
+		std::string bumpTexturePath = ASSET_PATH + TEXTURE_PATH + "/gate_norm.png";
+		material->loadBumpMap(bumpTexturePath);
+		go->getChild(i)->setMaterial(material);
+	}
+	go->getTransform()->setPosition(-10.0f, 0.0f, -25.0f);
+	go->getTransform()->setRotation(0.0f, 45.0f, 0.0f);
+	go->getTransform()->setScale(0.1f, 0.1f, 0.1f);
+	displayList.push_back(go);
+
+	//Model and texture for the satellite
+	go = loadFBXFromFile(satelliteModel);
+	for (int i = 0; i < go->getChildCount(); i++)
+	{
+		Material * material = new Material();
+		material->init();
+		std::string vsPath = ASSET_PATH + SHADER_PATH + "/DirectionalLightTextureVS.glsl";
+		std::string fsPath = ASSET_PATH + SHADER_PATH + "/DirectionalLightTextureFS.glsl";
+		material->loadShader(vsPath, fsPath);
+		std::string diffTexturePath = ASSET_PATH + TEXTURE_PATH + "/satellite_diff.png";
+		material->loadDiffuseMap(diffTexturePath);
+		std::string bumpTexturePath = ASSET_PATH + TEXTURE_PATH + "/satellite_norm.png";
+		material->loadBumpMap(bumpTexturePath);
+		go->getChild(i)->setMaterial(material);
+	}
+	go->getTransform()->setPosition(5.0f, 0.0f, -50.0f);
+	go->getTransform()->setRotation(0.0f, 45.0f, 0.0f);
+	go->getTransform()->setScale(0.01f, 0.01f, 0.01f);
+	displayList.push_back(go);
+
+	//Model and texture for the satellite
+	go = loadFBXFromFile(shipModel);
+	for (int i = 0; i < go->getChildCount(); i++)
+	{
+		Material * material = new Material();
+		material->init();
+		std::string vsPath = ASSET_PATH + SHADER_PATH + "/DirectionalLightTextureVS.glsl";
+		std::string fsPath = ASSET_PATH + SHADER_PATH + "/DirectionalLightTextureFS.glsl";
+		material->loadShader(vsPath, fsPath);
+		std::string diffTexturePath = ASSET_PATH + TEXTURE_PATH + "/ship3_diff.png";
+		material->loadDiffuseMap(diffTexturePath);
+		std::string bumpTexturePath = ASSET_PATH + TEXTURE_PATH + "/ship_norm.png";
+		material->loadBumpMap(bumpTexturePath);
+		go->getChild(i)->setMaterial(material);
+	}
+	go->getTransform()->setPosition(0.5f, 0.0f, 0.0f);
+	go->getTransform()->setRotation(0.0f, 0.0f, 20.0f);
+	go->getTransform()->setScale(0.001f, 0.001f, 0.001f);
+	displayList.push_back(go);
+
+	//Model and Texture for sun model
+	go = loadFBXFromFile(sunModel);
 	for (int i = 0; i < go->getChildCount(); i++)
 	{
 		Material * material = new Material();
@@ -235,14 +320,54 @@ void Initialise()
 		material->loadDiffuseMap(diffTexturePath);
 		std::string bumpTexturePath = ASSET_PATH + TEXTURE_PATH + "/sun_norm.png";
 		material->loadBumpMap(bumpTexturePath);
-
 		go->getChild(i)->setMaterial(material);
 	}
-	go->getTransform()->setPosition(10.0f, 0.0f, -1000.0f);
+	go->getTransform()->setPosition(350.0f, 350.0f, -1000.0f);
 	go->getTransform()->setRotation(40.0f, 0.0f, 0.0f);
 	go->getTransform()->setScale(5.0f, 5.0f, 5.0f);
 	displayList.push_back(go);
+
+	//Model and texture for the earth model
+	go = loadFBXFromFile(earthModel);
+	for (int i = 0; i < go->getChildCount(); i++)
+	{
+		Material * material = new Material();
+		material->init();
+		std::string vsPath = ASSET_PATH + SHADER_PATH + "/DirectionalLightTextureVS.glsl";
+		std::string fsPath = ASSET_PATH + SHADER_PATH + "/DirectionalLightTextureFS.glsl";
+		material->loadShader(vsPath, fsPath);
+		std::string diffTexturePath = ASSET_PATH + TEXTURE_PATH + "/earth_diff.png";
+		material->loadDiffuseMap(diffTexturePath);
+		std::string bumpTexturePath = ASSET_PATH + TEXTURE_PATH + "/earth_norm.png";
+		material->loadBumpMap(bumpTexturePath);
+		go->getChild(i)->setMaterial(material);
+	}
+	go->getTransform()->setPosition(0.0f, -450.0f, -1000.0f);
+	go->getTransform()->setRotation(40.0f, 0.0f, 0.0f);
+	go->getTransform()->setScale(5.0f, 5.0f, 5.0f);
+	displayList.push_back(go);
+
+	//Model and texture for the moon model
+	go = loadFBXFromFile(moonModel);
+	for (int i = 0; i < go->getChildCount(); i++)
+	{
+		Material * material = new Material();
+		material->init();
+		std::string vsPath = ASSET_PATH + SHADER_PATH + "/DirectionalLightTextureVS.glsl";
+		std::string fsPath = ASSET_PATH + SHADER_PATH + "/DirectionalLightTextureFS.glsl";
+		material->loadShader(vsPath, fsPath);
+		std::string diffTexturePath = ASSET_PATH + TEXTURE_PATH + "/moon_diff.png";
+		material->loadDiffuseMap(diffTexturePath);
+		std::string bumpTexturePath = ASSET_PATH + TEXTURE_PATH + "/moon_norm.png";
+		material->loadBumpMap(bumpTexturePath);
+		go->getChild(i)->setMaterial(material);
+	}
+	go->getTransform()->setPosition(-150.0f, -200.0f, -1000.0f);
+	go->getTransform()->setRotation(40.0f, 0.0f, 0.0f);
+	go->getTransform()->setScale(1.0f, 1.0f, 1.0f);
+	displayList.push_back(go);
 }
+
 
 
 
