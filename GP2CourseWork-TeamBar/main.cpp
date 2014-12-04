@@ -43,9 +43,9 @@ SDL_Window * window = NULL;
 SDL_GLContext glcontext = NULL;
 
 //Window Width
-const int WINDOW_WIDTH = 1240;
+const int WINDOW_WIDTH = 1000;
 //Window Height
-const int WINDOW_HEIGHT = 800;
+const int WINDOW_HEIGHT = 600;
 
 bool running = true;
 
@@ -168,7 +168,7 @@ void Initialise()
 	mainCamera->setName("MainCamera");
 
 	Transform *t = new Transform();
-	t->setPosition(0.0f, 0.0f, 2.0f);
+	t->setPosition(0.0f, 0.0f, 3.0f);
 	mainCamera->setTransform(t);
 
 	Camera * c = new Camera();
@@ -200,10 +200,10 @@ void Initialise()
 	//List of models being used in the scene
 	//Will want to put all of these into an array for convience
 	std::string stationModel = ASSET_PATH + MODEL_PATH + "station.fbx";
-	std::string sunModel = ASSET_PATH + MODEL_PATH + "sun.fbx";
-	std::string earthModel = ASSET_PATH + MODEL_PATH + "earth.fbx";
-	std::string moonModel = ASSET_PATH + MODEL_PATH + "moon.fbx";
-	std::string shipModel = ASSET_PATH + MODEL_PATH + "ship.fbx";
+	std::string sunModel = ASSET_PATH + MODEL_PATH + "sphere.fbx";
+	std::string earthModel = ASSET_PATH + MODEL_PATH + "sphere.fbx";
+	std::string moonModel = ASSET_PATH + MODEL_PATH + "sphere.fbx";
+	std::string shipModel = ASSET_PATH + MODEL_PATH + "newShip.fbx";
 	std::string gateModel = ASSET_PATH + MODEL_PATH + "gate.fbx";
 	std::string satelliteModel = ASSET_PATH + MODEL_PATH + "satellite.fbx";
 
@@ -223,7 +223,7 @@ void Initialise()
 		go->getChild(i)->setMaterial(material);
 	}
 	go->getTransform()->setPosition(0.0f, 0.0f, -50.0f);
-	go->getTransform()->setRotation(0.0f, -40.0f, 0.0f);
+	go->getTransform()->setRotation(45.0f, 90.0f, 90.0f);
 	go->getTransform()->setScale(0.1f, 0.1f, 0.1f);
 	displayList.push_back(go);
 
@@ -287,24 +287,22 @@ void Initialise()
 	go->getTransform()->setScale(0.01f, 0.01f, 0.01f);
 	displayList.push_back(go);
 
-	//Model and texture for the satellite
+	//Model and texture for the space ship1
 	go = loadFBXFromFile(shipModel);
 	for (int i = 0; i < go->getChildCount(); i++)
 	{
 		Material * material = new Material();
 		material->init();
-		std::string vsPath = ASSET_PATH + SHADER_PATH + "/DirectionalLightTextureVS.glsl";
-		std::string fsPath = ASSET_PATH + SHADER_PATH + "/DirectionalLightTextureFS.glsl";
+		std::string vsPath = ASSET_PATH + SHADER_PATH + "/textureVS.glsl";
+		std::string fsPath = ASSET_PATH + SHADER_PATH + "/textureFS.glsl";
 		material->loadShader(vsPath, fsPath);
-		std::string diffTexturePath = ASSET_PATH + TEXTURE_PATH + "/ship3_diff.png";
+		std::string diffTexturePath = ASSET_PATH + TEXTURE_PATH + "/ship5_diff.png";
 		material->loadDiffuseMap(diffTexturePath);
-		std::string bumpTexturePath = ASSET_PATH + TEXTURE_PATH + "/ship_norm.png";
-		material->loadBumpMap(bumpTexturePath);
 		go->getChild(i)->setMaterial(material);
 	}
-	go->getTransform()->setPosition(0.5f, 0.0f, 0.0f);
-	go->getTransform()->setRotation(0.0f, 0.0f, 20.0f);
-	go->getTransform()->setScale(0.001f, 0.001f, 0.001f);
+	go->getTransform()->setPosition(0.0f, -5.0f, -70.0f);
+	go->getTransform()->setRotation(90.0f, 0.0f, 0.0f);
+	go->getTransform()->setScale(0.002f, 0.002f, 0.002f);
 	displayList.push_back(go);
 
 	//Model and Texture for sun model
@@ -313,18 +311,16 @@ void Initialise()
 	{
 		Material * material = new Material();
 		material->init();
-		std::string vsPath = ASSET_PATH + SHADER_PATH + "/DirectionalLightTextureVS.glsl";
-		std::string fsPath = ASSET_PATH + SHADER_PATH + "/DirectionalLightTextureFS.glsl";
+		std::string vsPath = ASSET_PATH + SHADER_PATH + "/textureVS.glsl";
+		std::string fsPath = ASSET_PATH + SHADER_PATH + "/textureFS.glsl";
 		material->loadShader(vsPath, fsPath);
-		std::string diffTexturePath = ASSET_PATH + TEXTURE_PATH + "/sun_diff.png";
+		std::string diffTexturePath = ASSET_PATH + TEXTURE_PATH + "/sun1_diff.png";
 		material->loadDiffuseMap(diffTexturePath);
-		std::string bumpTexturePath = ASSET_PATH + TEXTURE_PATH + "/sun_norm.png";
-		material->loadBumpMap(bumpTexturePath);
 		go->getChild(i)->setMaterial(material);
 	}
-	go->getTransform()->setPosition(350.0f, 350.0f, -1000.0f);
-	go->getTransform()->setRotation(40.0f, 0.0f, 0.0f);
-	go->getTransform()->setScale(5.0f, 5.0f, 5.0f);
+	go->getTransform()->setPosition(0.0f, 200.0f, -1000.0f);
+	go->getTransform()->setRotation(0.0f, 90.0f, 0.0f);
+	go->getTransform()->setScale(0.5f, 0.5f, 0.5f);
 	displayList.push_back(go);
 
 	//Model and texture for the earth model
@@ -342,9 +338,9 @@ void Initialise()
 		material->loadBumpMap(bumpTexturePath);
 		go->getChild(i)->setMaterial(material);
 	}
-	go->getTransform()->setPosition(0.0f, -450.0f, -1000.0f);
-	go->getTransform()->setRotation(40.0f, 0.0f, 0.0f);
-	go->getTransform()->setScale(5.0f, 5.0f, 5.0f);
+	go->getTransform()->setPosition(-300.0f, -300.0f, -1000.0f);
+	go->getTransform()->setRotation(-60.0f, -60.0f, 0.0f);
+	go->getTransform()->setScale(0.6f, 0.6f, 0.6f);
 	displayList.push_back(go);
 
 	//Model and texture for the moon model
@@ -364,7 +360,7 @@ void Initialise()
 	}
 	go->getTransform()->setPosition(-150.0f, -200.0f, -1000.0f);
 	go->getTransform()->setRotation(40.0f, 0.0f, 0.0f);
-	go->getTransform()->setScale(1.0f, 1.0f, 1.0f);
+	go->getTransform()->setScale(0.08f, 0.08f, 0.08f);
 	displayList.push_back(go);
 }
 
