@@ -48,6 +48,12 @@
     <ClCompile Include="Transform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SkyboxMaterial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PostProcessing.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h">
@@ -83,6 +89,15 @@
     <ClInclude Include="Vertex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Header.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SkyboxMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PostProcessing.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="assets\shaders\ambientFS.glsl" />
@@ -103,5 +118,9 @@
     <None Include="assets\shaders\vertexColourTextureFS.glsl" />
     <None Include="assets\shaders\vertexColourTextureVS.glsl" />
     <None Include="assets\shaders\vertexColourVS.glsl" />
+    <None Include="assets\shaders\skyVS.glsl" />
+    <None Include="assets\shaders\skyFS.glsl" />
+    <None Include="assets\shaders\colourFilterPostFS.glsl" />
+    <None Include="assets\shaders\passThroughVS.glsl" />
   </ItemGroup>
 </Project>

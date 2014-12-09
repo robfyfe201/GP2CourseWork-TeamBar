@@ -35,6 +35,7 @@ const std::string MODEL_PATH = "models/";
 #include "Camera.h"
 #include "Light.h"
 #include "FBXLoader.h"
+#include "SkyboxMaterial.h"
 
 
 //SDL Window
@@ -54,7 +55,17 @@ vec4 ambientLightColour = vec4(1.0f, 1.0f, 1.0f, 1.0f);
 std::vector<GameObject*> displayList;
 GameObject * mainCamera;
 GameObject * mainLight;
+GameObject * skyBox = NULL;
 
+//Rotation floats -Earth
+float earthX = -45.0f;
+float earthY = -0.002f;
+float earthZ = 0.0f;
+
+//Camera Transform -Position
+float cameraX;
+float cameraY;
+float cameraZ;
 
 void CheckForErrors()
 {
@@ -162,13 +173,94 @@ void setViewport(int width, int height)
 	glViewport(0, 0, (GLsizei)width, (GLsizei)height);
 }
 
+void createSkyBox()
+{
+	Vertex triangleData[] = {
+			{ vec3(-10.0f, 10.0f, 10.0f) },// Top Left
+			{ vec3(-10.0f, -10.0f, 10.0f) },// Bottom Left
+			{ vec3(10.0f, -10.0f, 10.0f) }, //Bottom Right
+			{ vec3(10.0f, 10.0f, 10.0f) },// Top Right
+
+
+			//back
+			{ vec3(-10.0f, 10.0f, -10.0f) },// Top Left
+			{ vec3(-10.0f, -10.0f, -10.0f) },// Bottom Left
+			{ vec3(10.0, -10.0f, -10.0f) }, //Bottom Right
+			{ vec3(10.0f, 10.0f, -10.0f) }// Top Right
+	};
+
+
+	GLuint indices[] = {
+		//front
+		0, 1, 2,
+		0, 3, 2,
+
+		//left
+		4, 5, 1,
+		4, 1, 0,
+
+		//right
+		3, 7, 2,
+		7, 6, 2,
+
+		//bottom
+		1, 5, 2,
+		6, 2, 1,
+
+		//top
+		5, 0, 7,
+		5, 7, 3,
+
+		//back
+		4, 5, 6,
+		4, 7, 6
+	};
+
+	//creat mesh and copy in
+
+	Mesh * pMesh = new Mesh();
+	pMesh->init();
+
+	pMesh->copyVertexData(8, sizeof(Vertex), (void**)triangleData);
+	pMesh->copyIndexData(36, sizeof(int), (void**)indices);
+
+	Transform *t = new Transform();
+	t->setPosition(0.0f, 0.0f, 0.0f);
+	//load textures and skybox material + Shaders
+	SkyBoxMaterial *material = new SkyBoxMaterial();
+	material->init();
+
+	std::string vsPath = ASSET_PATH + SHADER_PATH + "/skyVS.glsl";
+	std::string fsPath = ASSET_PATH + SHADER_PATH + "/skyFS.glsl";
+	material->loadShader(vsPath, fsPath);
+
+	std::string posZTexturename = ASSET_PATH + TEXTURE_PATH + "StarField2048.png";
+	std::string negZTexturename = ASSET_PATH + TEXTURE_PATH + "StarField2048.png";
+	std::string posXTexturename = ASSET_PATH + TEXTURE_PATH + "StarField2048.png";
+	std::string negXTexturename = ASSET_PATH + TEXTURE_PATH + "StarField2048.png";
+	std::string posYTexturename = ASSET_PATH + TEXTURE_PATH + "StarField2048.png";
+	std::string negYTexturename = ASSET_PATH + TEXTURE_PATH + "StarField2048.png";
+
+	material->loadCubeTexture(posZTexturename, negZTexturename, posXTexturename, negXTexturename, posYTexturename, negYTexturename);
+	//create gameobject but don't add to queue!
+	skyBox = new GameObject();
+	skyBox->setMaterial(material);
+	skyBox->setTransform(t);
+	skyBox->setMesh(pMesh);
+}
+	
 void Initialise()
 {
+	std::string vsPath = ASSET_PATH + SHADER_PATH + "/DirectionalLightTextureVS.glsl";
+	std::string fsPath = ASSET_PATH + SHADER_PATH + "/DirectionalLightTextureFS.glsl";
+	createSkyBox();
+
+
 	mainCamera = new GameObject();
 	mainCamera->setName("MainCamera");
 
 	Transform *t = new Transform();
-	t->setPosition(0.0f, 0.0f, 3.0f);
+	t->setPosition(0.0f, 0.0f, 2.0f);
 	mainCamera->setTransform(t);
 
 	Camera * c = new Camera();
@@ -213,8 +305,6 @@ void Initialise()
 	{
 		Material * material = new Material();
 		material->init();
-		std::string vsPath = ASSET_PATH + SHADER_PATH + "/DirectionalLightTextureVS.glsl";
-		std::string fsPath = ASSET_PATH + SHADER_PATH + "/DirectionalLightTextureFS.glsl";
 		material->loadShader(vsPath, fsPath);
 		std::string diffTexturePath = ASSET_PATH + TEXTURE_PATH + "/station_diff.png";
 		material->loadDiffuseMap(diffTexturePath);
@@ -222,9 +312,7 @@ void Initialise()
 		material->loadBumpMap(bumpTexturePath);
 		go->getChild(i)->setMaterial(material);
 	}
-	go->getTransform()->setPosition(0.0f, 0.0f, -50.0f);
-	go->getTransform()->setRotation(45.0f, 90.0f, 90.0f);
-	go->getTransform()->setScale(0.1f, 0.1f, 0.1f);
+	go->getTransform()->setPosition(0.0f, 0.0f, -600.0f);
 	displayList.push_back(go);
 
 	//Model and texture for Gate 1
@@ -233,8 +321,6 @@ void Initialise()
 	{
 		Material * material = new Material();
 		material->init();
-		std::string vsPath = ASSET_PATH + SHADER_PATH + "/DirectionalLightTextureVS.glsl";
-		std::string fsPath = ASSET_PATH + SHADER_PATH + "/DirectionalLightTextureFS.glsl";
 		material->loadShader(vsPath, fsPath);
 		std::string diffTexturePath = ASSET_PATH + TEXTURE_PATH + "/gate_diff.png";
 		material->loadDiffuseMap(diffTexturePath);
@@ -242,9 +328,8 @@ void Initialise()
 		material->loadBumpMap(bumpTexturePath);
 		go->getChild(i)->setMaterial(material);
 	}
-	go->getTransform()->setPosition(10.0f, 0.0f, -25.0f);
-	go->getTransform()->setRotation(0.0f, 45.0f, 0.0f);
-	go->getTransform()->setScale(0.1f, 0.1f, 0.1f);
+	go->getTransform()->setPosition(80.0f, 0.0f, -300.0f);
+	go->getTransform()->setRotation(0.0f, 0.0f, 0.0f);
 	displayList.push_back(go);
 
 	//Model and texture for Gate 2
@@ -253,8 +338,6 @@ void Initialise()
 	{
 		Material * material = new Material();
 		material->init();
-		std::string vsPath = ASSET_PATH + SHADER_PATH + "/DirectionalLightTextureVS.glsl";
-		std::string fsPath = ASSET_PATH + SHADER_PATH + "/DirectionalLightTextureFS.glsl";
 		material->loadShader(vsPath, fsPath);
 		std::string diffTexturePath = ASSET_PATH + TEXTURE_PATH + "/gate_diff.png";
 		material->loadDiffuseMap(diffTexturePath);
@@ -262,9 +345,8 @@ void Initialise()
 		material->loadBumpMap(bumpTexturePath);
 		go->getChild(i)->setMaterial(material);
 	}
-	go->getTransform()->setPosition(-10.0f, 0.0f, -25.0f);
-	go->getTransform()->setRotation(0.0f, 45.0f, 0.0f);
-	go->getTransform()->setScale(0.1f, 0.1f, 0.1f);
+	go->getTransform()->setPosition(-80.0f, 0.0f, -300.0f);
+	go->getTransform()->setRotation(0.0f, 0.0f, 0.0f);
 	displayList.push_back(go);
 
 	//Model and texture for the satellite
@@ -273,8 +355,6 @@ void Initialise()
 	{
 		Material * material = new Material();
 		material->init();
-		std::string vsPath = ASSET_PATH + SHADER_PATH + "/DirectionalLightTextureVS.glsl";
-		std::string fsPath = ASSET_PATH + SHADER_PATH + "/DirectionalLightTextureFS.glsl";
 		material->loadShader(vsPath, fsPath);
 		std::string diffTexturePath = ASSET_PATH + TEXTURE_PATH + "/satellite_diff.png";
 		material->loadDiffuseMap(diffTexturePath);
@@ -293,8 +373,6 @@ void Initialise()
 	{
 		Material * material = new Material();
 		material->init();
-		std::string vsPath = ASSET_PATH + SHADER_PATH + "/textureVS.glsl";
-		std::string fsPath = ASSET_PATH + SHADER_PATH + "/textureFS.glsl";
 		material->loadShader(vsPath, fsPath);
 		std::string diffTexturePath = ASSET_PATH + TEXTURE_PATH + "/ship5_diff.png";
 		material->loadDiffuseMap(diffTexturePath);
@@ -311,8 +389,6 @@ void Initialise()
 	{
 		Material * material = new Material();
 		material->init();
-		std::string vsPath = ASSET_PATH + SHADER_PATH + "/textureVS.glsl";
-		std::string fsPath = ASSET_PATH + SHADER_PATH + "/textureFS.glsl";
 		material->loadShader(vsPath, fsPath);
 		std::string diffTexturePath = ASSET_PATH + TEXTURE_PATH + "/sun1_diff.png";
 		material->loadDiffuseMap(diffTexturePath);
@@ -329,17 +405,15 @@ void Initialise()
 	{
 		Material * material = new Material();
 		material->init();
-		std::string vsPath = ASSET_PATH + SHADER_PATH + "/DirectionalLightTextureVS.glsl";
-		std::string fsPath = ASSET_PATH + SHADER_PATH + "/DirectionalLightTextureFS.glsl";
 		material->loadShader(vsPath, fsPath);
 		std::string diffTexturePath = ASSET_PATH + TEXTURE_PATH + "/earth_diff.png";
 		material->loadDiffuseMap(diffTexturePath);
 		std::string bumpTexturePath = ASSET_PATH + TEXTURE_PATH + "/earth_norm.png";
 		material->loadBumpMap(bumpTexturePath);
 		go->getChild(i)->setMaterial(material);
+		go->setName("earth");
 	}
 	go->getTransform()->setPosition(-300.0f, -300.0f, -1000.0f);
-	go->getTransform()->setRotation(-60.0f, -60.0f, 0.0f);
 	go->getTransform()->setScale(0.6f, 0.6f, 0.6f);
 	displayList.push_back(go);
 
@@ -349,8 +423,6 @@ void Initialise()
 	{
 		Material * material = new Material();
 		material->init();
-		std::string vsPath = ASSET_PATH + SHADER_PATH + "/DirectionalLightTextureVS.glsl";
-		std::string fsPath = ASSET_PATH + SHADER_PATH + "/DirectionalLightTextureFS.glsl";
 		material->loadShader(vsPath, fsPath);
 		std::string diffTexturePath = ASSET_PATH + TEXTURE_PATH + "/moon_diff.png";
 		material->loadDiffuseMap(diffTexturePath);
@@ -370,6 +442,8 @@ void Initialise()
 //Function to update the game state
 void update()
 {
+	skyBox->update();
+
 	//alternative sytanx
 	for (auto iter = displayList.begin(); iter != displayList.end(); iter++)
 	{
@@ -386,7 +460,7 @@ void renderGameObject(GameObject * pObject)
 
 	Mesh * currentMesh = pObject->getMesh();
 	Transform * currentTransform = pObject->getTransform();
-	Material * currentMaterial = pObject->getMaterial();
+	Material * currentMaterial = (Material*)pObject->getMaterial();
 
 	if (currentMesh && currentMaterial && currentTransform)
 	{
@@ -453,6 +527,36 @@ void renderGameObject(GameObject * pObject)
 	}
 }
 
+void renderSkyBox()
+{
+	skyBox->render();
+
+	Mesh * currentMesh = skyBox->getMesh();
+	SkyBoxMaterial * currentMaterial = (SkyBoxMaterial*)skyBox->getMaterial();
+	if (currentMesh && currentMaterial)
+	{
+		Camera * cam = mainCamera->getCamera();
+
+		currentMaterial->bind();
+		currentMesh->bind();
+
+		GLint cameraLocation = currentMaterial->getUniformLocation("cameraPos");
+		GLint viewLocation = currentMaterial->getUniformLocation("view");
+		GLint projectionLocation = currentMaterial->getUniformLocation("projection");
+		GLint cubeTextureLocation = currentMaterial->getUniformLocation("cubeTexture");
+
+		glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(cam->getProjection()));
+		glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(cam->getView()));
+		glUniform4fv(cameraLocation, 1, glm::value_ptr(mainCamera->getTransform()->getPosition()));
+		glUniform1i(cubeTextureLocation, 0);
+
+		glDrawElements(GL_TRIANGLES, currentMesh->getIndexCount(), GL_UNSIGNED_INT, 0);
+
+		currentMaterial->unbind();
+	}
+	CheckForErrors();
+}
+
 //Function to render(aka draw)
 void render()
 {
@@ -463,6 +567,8 @@ void render()
 	//clear the colour and depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	renderSkyBox();
+
 	//alternative sytanx
 	for (auto iter = displayList.begin(); iter != displayList.end(); iter++)
 	{
@@ -472,7 +578,25 @@ void render()
 	SDL_GL_SwapWindow(window);
 }
 
+void rotate()
+{
+	if (earthY < 360.0f)
+	{
+		earthY++;
+	}
+	else
+	{
+		earthY = 0.0f;
+	}
 
+	for (auto iter = displayList.begin(); iter != displayList.end(); iter++)
+	{
+		if ((*iter)->getName() == "earth")
+		{
+			(*iter)->getTransform()->setRotation(earthX, earthY, earthZ);
+		}
+	}
+}
 
 //Main Method
 int main(int argc, char * arg[])
@@ -519,6 +643,7 @@ int main(int argc, char * arg[])
 			}
 		}
 		update();
+		rotate();
 		//render
 		render();
 

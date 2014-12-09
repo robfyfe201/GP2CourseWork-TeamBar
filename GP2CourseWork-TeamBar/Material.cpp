@@ -3,6 +3,34 @@
 #include "Texture.h"
 #include "Vertex.h"
 
+
+bool BaseMaterial::loadShader(const std::string& vsFilename, const std::string& fsFilename)
+{
+	GLuint vertexShaderProgram = 0;
+	vertexShaderProgram = loadShaderFromFile(const_cast<std::string&>(vsFilename), VERTEX_SHADER);
+
+	GLuint fragmentShaderProgram = 0;
+	fragmentShaderProgram = loadShaderFromFile(const_cast<std::string&>(fsFilename), FRAGMENT_SHADER);
+
+	m_ShaderProgram = glCreateProgram();
+	glAttachShader(m_ShaderProgram, vertexShaderProgram);
+	glAttachShader(m_ShaderProgram, fragmentShaderProgram);
+	glLinkProgram(m_ShaderProgram);
+	checkForLinkErrors(m_ShaderProgram);
+
+	//now we can delete the VS & FS Programs
+	glDeleteShader(vertexShaderProgram);
+	glDeleteShader(fragmentShaderProgram);
+
+	return true;
+}
+
+GLint BaseMaterial::getUniformLocation(const std::string& name)
+{
+	return glGetUniformLocation(m_ShaderProgram, name.c_str());
+}
+
+
 Material::Material()
 {
 	m_ShaderProgram = -1;
@@ -27,7 +55,7 @@ void Material::destroy()
 	glDeleteTextures(1, &m_DiffuseMap);
 	glDeleteTextures(1, &m_SpecularMap);
 	glDeleteTextures(1, &m_BumpMap);
-	glDeleteTextures(2, &m_HeightMap);
+	glDeleteTextures(1, &m_HeightMap);
 }
 
 void Material::bind()
@@ -58,7 +86,7 @@ void Material::bind()
 	glBindAttribLocation(m_ShaderProgram, vertexTexLocation, "vertexTexCoords");
 	glBindAttribLocation(m_ShaderProgram, vertexColourLocation, "vertexColour");
 	glBindAttribLocation(m_ShaderProgram, vertexTangentLocation, "vertexTangents");
-	glBindAttribLocation(m_ShaderProgram, 5, "vertexBinormals");
+	glBindAttribLocation(m_ShaderProgram, vertexBinormalLocation, "vertexBinormals");
 
 	//Tell the shader that 0 is the position element
 	glEnableVertexAttribArray(vertexPosLocation);
@@ -66,40 +94,15 @@ void Material::bind()
 	glEnableVertexAttribArray(vertexNormalLocation);
 	glVertexAttribPointer(vertexNormalLocation, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void**)sizeof(vec3));
 	glEnableVertexAttribArray(vertexTexLocation);
-	glVertexAttribPointer(vertexTexLocation, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void**)(sizeof(vec3)+sizeof(vec3)));
+	glVertexAttribPointer(vertexTexLocation, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void**)(sizeof(vec3) + sizeof(vec3)));
 	glEnableVertexAttribArray(vertexColourLocation);
-	glVertexAttribPointer(vertexColourLocation, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void**)(sizeof(vec3)+sizeof(vec3)+sizeof(vec2)));
+	glVertexAttribPointer(vertexColourLocation, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void**)(sizeof(vec3) + sizeof(vec3) + sizeof(vec2)));
 	glEnableVertexAttribArray(vertexTangentLocation);
-	glVertexAttribPointer(vertexTangentLocation, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void**)(sizeof(vec3)+sizeof(vec3)+sizeof(vec2)+sizeof(vec4)));
+	glVertexAttribPointer(vertexTangentLocation, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void**)(sizeof(vec3) + sizeof(vec3) + sizeof(vec2) + sizeof(vec4)));
 	glEnableVertexAttribArray(vertexBinormalLocation);
-	glVertexAttribPointer(vertexBinormalLocation, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void**)(sizeof(vec3)+sizeof(vec3)+sizeof(vec2)+sizeof(vec4)+sizeof(vec3)));
+	glVertexAttribPointer(vertexBinormalLocation, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void**)(sizeof(vec3) + sizeof(vec3) + sizeof(vec2) + sizeof(vec4) + sizeof(vec3)));
 }
 
-bool Material::loadShader(const std::string& vsFilename, const std::string& fsFilename)
-{
-	GLuint vertexShaderProgram = 0;
-	vertexShaderProgram = loadShaderFromFile(const_cast<std::string&>(vsFilename), VERTEX_SHADER);
-
-	GLuint fragmentShaderProgram = 0;
-	fragmentShaderProgram = loadShaderFromFile(const_cast<std::string&>(fsFilename), FRAGMENT_SHADER);
-
-	m_ShaderProgram = glCreateProgram();
-	glAttachShader(m_ShaderProgram, vertexShaderProgram);
-	glAttachShader(m_ShaderProgram, fragmentShaderProgram);
-	glLinkProgram(m_ShaderProgram);
-	checkForLinkErrors(m_ShaderProgram);
-
-	//now we can delete the VS & FS Programs
-	glDeleteShader(vertexShaderProgram);
-	glDeleteShader(fragmentShaderProgram);
-
-	return true;
-}
-
-GLint Material::getUniformLocation(const std::string& name)
-{
-	return glGetUniformLocation(m_ShaderProgram, name.c_str());
-}
 
 vec4& Material::getAmbientColour()
 {

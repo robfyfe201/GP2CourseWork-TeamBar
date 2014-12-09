@@ -7,7 +7,7 @@
 class Component;
 class Transform;
 class Mesh;
-class Material;
+class BaseMaterial;
 class Camera;
 class Light;
 
@@ -31,7 +31,7 @@ public:
 
 	void setTransform(Transform * transform);
 	void setMesh(Mesh * mesh);
-	void setMaterial(Material * material);
+	void setMaterial(BaseMaterial * material);
 	void setCamera(Camera * camera);
 	void setLight(Light * light);
 
@@ -42,7 +42,7 @@ public:
 
 	Transform * getTransform();
 	Mesh *getMesh();
-	Material *getMaterial();
+	BaseMaterial *getMaterial();
 	Camera * getCamera();
 	Light* getLight();
 
@@ -59,7 +59,7 @@ private:
 
 	Transform *m_Transform;
 	Mesh *m_Mesh;
-	Material *m_Material;
+	BaseMaterial *m_Material;
 	Camera *m_Camera;
 	Light *m_Light;
 

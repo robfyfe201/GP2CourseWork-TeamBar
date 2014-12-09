@@ -90,7 +90,9 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="PostProcessing.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="SkyboxMaterial.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Transform.cpp" />
   </ItemGroup>
@@ -99,10 +101,13 @@
     <ClInclude Include="Component.h" />
     <ClInclude Include="FBXLoader.h" />
     <ClInclude Include="GameObject.h" />
+    <ClInclude Include="Header.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Mesh.h" />
+    <ClInclude Include="PostProcessing.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="SkyboxMaterial.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="Vertex.h" />
@@ -112,10 +117,14 @@
     <None Include="assets\shaders\ambientVS.glsl" />
     <None Include="assets\shaders\BumpmappingFS.glsl" />
     <None Include="assets\shaders\BumpmappingVS.glsl" />
+    <None Include="assets\shaders\colourFilterPostFS.glsl" />
     <None Include="assets\shaders\DirectionalLightTextureFS.glsl" />
     <None Include="assets\shaders\DirectionalLightTextureVS.glsl" />
+    <None Include="assets\shaders\passThroughVS.glsl" />
     <None Include="assets\shaders\simpleFS.glsl" />
     <None Include="assets\shaders\simpleVS.glsl" />
+    <None Include="assets\shaders\skyFS.glsl" />
+    <None Include="assets\shaders\skyVS.glsl" />
     <None Include="assets\shaders\specularFS.glsl" />
     <None Include="assets\shaders\specularFSPerPixel.glsl" />
     <None Include="assets\shaders\specularVS.glsl" />
