@@ -58,14 +58,23 @@ GameObject * mainLight;
 GameObject * skyBox = NULL;
 
 //Rotation floats -Earth
+<<<<<<< HEAD
 float earthX = -45.0f;
 float earthY = -0.002f;
+=======
+float earthX = -60.0f;
+float earthY = -60.0f;
+>>>>>>> origin/master
 float earthZ = 0.0f;
 
 //Camera Transform -Position
 float cameraX;
 float cameraY;
 float cameraZ;
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/master
 
 void CheckForErrors()
 {
@@ -414,6 +423,10 @@ void Initialise()
 		go->setName("earth");
 	}
 	go->getTransform()->setPosition(-300.0f, -300.0f, -1000.0f);
+<<<<<<< HEAD
+=======
+	go->getTransform()->setRotation(earthX, earthY, earthZ);
+>>>>>>> origin/master
 	go->getTransform()->setScale(0.6f, 0.6f, 0.6f);
 	displayList.push_back(go);
 
@@ -448,6 +461,15 @@ void update()
 	for (auto iter = displayList.begin(); iter != displayList.end(); iter++)
 	{
 		(*iter)->update();
+	}
+	
+	//Update camera position
+	for (auto iter = displayList.begin(); iter != displayList.end(); iter++)
+	{
+		if ((*iter)->getName == "MainCamera")
+		{
+			(*iter)->getTransform()->setPosition(cameraX, cameraY, cameraZ);
+		}
 	}
 }
 
@@ -580,6 +602,7 @@ void render()
 
 void rotate()
 {
+<<<<<<< HEAD
 	if (earthY < 360.0f)
 	{
 		earthY++;
@@ -597,7 +620,36 @@ void rotate()
 		}
 	}
 }
+=======
+	if (earthX < 360.0f)
+	{
+		earthX++;
+	}
+	else
+	{
+		earthX = 0.0f;
+	}
+	
+	if (earthY < 360.0f)
+	{
+		earthY++;
 
+	}
+	else
+	{
+		earthY = 0.0f;
+	}
+>>>>>>> origin/master
+
+	for (auto iter = displayList.begin(); iter != displayList.end(); iter++)
+	{
+		if ((*iter)->getName() == "earth")
+		{
+			(*iter)->getTransform()->setRotation(earthX, earthY, earthZ);
+		}
+	}
+}
+	
 //Main Method
 int main(int argc, char * arg[])
 {
@@ -642,6 +694,9 @@ int main(int argc, char * arg[])
 				running = false;
 			}
 		}
+		
+		
+		rotate();	
 		update();
 		rotate();
 		//render
