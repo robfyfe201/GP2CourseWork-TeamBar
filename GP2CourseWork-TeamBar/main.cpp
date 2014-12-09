@@ -55,6 +55,16 @@ std::vector<GameObject*> displayList;
 GameObject * mainCamera;
 GameObject * mainLight;
 
+//Rotation floats -Earth
+float earthX = -60.0f;
+float earthY = -60.0f;
+float earthZ = 0.0f;
+
+//Camera Transform -Position
+float cameraX;
+float cameraY;
+float cameraZ;
+
 
 void CheckForErrors()
 {
@@ -337,9 +347,10 @@ void Initialise()
 		std::string bumpTexturePath = ASSET_PATH + TEXTURE_PATH + "/earth_norm.png";
 		material->loadBumpMap(bumpTexturePath);
 		go->getChild(i)->setMaterial(material);
+		go->setName("earth");
 	}
 	go->getTransform()->setPosition(-300.0f, -300.0f, -1000.0f);
-	go->getTransform()->setRotation(-60.0f, -60.0f, 0.0f);
+	go->getTransform()->setRotation(earthX, earthY, earthZ);
 	go->getTransform()->setScale(0.6f, 0.6f, 0.6f);
 	displayList.push_back(go);
 
@@ -374,6 +385,15 @@ void update()
 	for (auto iter = displayList.begin(); iter != displayList.end(); iter++)
 	{
 		(*iter)->update();
+	}
+	
+	//Update camera position
+	for (auto iter = displayList.begin(); iter != displayList.end(); iter++)
+	{
+		if ((*iter)->getName == "MainCamera")
+		{
+			(*iter)->getTransform()->setPosition(cameraX, cameraY, cameraZ);
+		}
 	}
 }
 
@@ -472,8 +492,36 @@ void render()
 	SDL_GL_SwapWindow(window);
 }
 
+void rotate()
+{
+	if (earthX < 360.0f)
+	{
+		earthX++;
+	}
+	else
+	{
+		earthX = 0.0f;
+	}
+	
+	if (earthY < 360.0f)
+	{
+		earthY++;
 
+	}
+	else
+	{
+		earthY = 0.0f;
+	}
 
+	for (auto iter = displayList.begin(); iter != displayList.end(); iter++)
+	{
+		if ((*iter)->getName() == "earth")
+		{
+			(*iter)->getTransform()->setRotation(earthX, earthY, earthZ);
+		}
+	}
+}
+	
 //Main Method
 int main(int argc, char * arg[])
 {
@@ -518,6 +566,9 @@ int main(int argc, char * arg[])
 				running = false;
 			}
 		}
+		
+		
+		rotate();	
 		update();
 		//render
 		render();
