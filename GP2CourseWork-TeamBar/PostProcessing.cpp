@@ -15,6 +15,7 @@ PostProcessing::~PostProcessing()
 
 }
 
+//Call other initialisation methods
 void PostProcessing::init(int width, int height, std::string& vertexShaderFilename, std::string& fragmentShaderFilename)
 {
 	m_Width = width;
@@ -24,6 +25,7 @@ void PostProcessing::init(int width, int height, std::string& vertexShaderFilena
 	createFullScreenQuad();
 }
 
+//Loads shaders and links them together into shader program
 void PostProcessing::createShader(std::string& vertexShaderFilename, std::string& fragmentShaderFilename)
 {
 	GLuint vertexShaderProgram = 0;
@@ -46,6 +48,7 @@ void PostProcessing::createShader(std::string& vertexShaderFilename, std::string
 
 }
 
+//Create screen aligned quad to map texture to
 void PostProcessing::createFullScreenQuad()
 {
 	/* init_resources */
@@ -61,8 +64,10 @@ void PostProcessing::createFullScreenQuad()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+//Create texture, depth buffer and framebuffer
 void PostProcessing::createFramebuffer(int width, int height)
 {
+	//Create surface - Generate texture with no data on it, to be attached to colour attachment point of FBO
 	glActiveTexture(GL_TEXTURE0);
 	glGenTextures(1, &m_FBOTexture);
 	glBindTexture(GL_TEXTURE_2D, m_FBOTexture);
@@ -70,16 +75,16 @@ void PostProcessing::createFramebuffer(int width, int height)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL); //
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	/* Depth buffer */
+	// Depth buffer 
 	glGenRenderbuffers(1, &m_DepthBufferObject);
 	glBindRenderbuffer(GL_RENDERBUFFER, m_DepthBufferObject);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width, height);
 	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
-	/* Framebuffer to link everything together */
+	// Framebuffer to link everything together
 	glGenFramebuffers(1, &m_FrameBufferObject);
 	glBindFramebuffer(GL_FRAMEBUFFER, m_FrameBufferObject);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_FBOTexture, 0);
@@ -91,21 +96,27 @@ void PostProcessing::createFramebuffer(int width, int height)
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+//Bind FBO to pipeline - drawing renders to bound FBO    
 void PostProcessing::bind()
 {
+	//Pass 0 to render back to back buffer / make sure u call destroy to free memory /
 	glBindFramebuffer(GL_FRAMEBUFFER, m_FrameBufferObject);
 
 }
 
+//Set up render states 
 void PostProcessing::preDraw()
 {
+	//Bind framebuffer texture
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_FBOTexture);
 
+	//Send texture to shader program
 	glUseProgram(m_PostProcessingProgram);
 	GLint textureLocation = glGetUniformLocation(m_PostProcessingProgram, "texture0");
 	glUniform1i(textureLocation, 0);
 
+	//Bind VBO & define vertex layout
 	GLint vertexPosLocation = glGetAttribLocation(m_PostProcessingProgram, "vertexPosition");
 	glEnableVertexAttribArray(0);
 
@@ -127,6 +138,7 @@ void PostProcessing::postDraw()
 	glDisableVertexAttribArray(0);
 }
 
+//Draw quad
 void PostProcessing::draw()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -139,6 +151,7 @@ void PostProcessing::draw()
 
 }
 
+//Cleans up memory
 void PostProcessing::destroy()
 {
 	glDeleteBuffers(1, &m_FullScreenVBO);
@@ -148,6 +161,7 @@ void PostProcessing::destroy()
 	glDeleteFramebuffers(1, &m_FrameBufferObject);
 }
 
+//Return uniform locations from the shader program
 GLint PostProcessing::getUniformVariableLocation(const std::string& name)
 {
 	return glGetUniformLocation(m_PostProcessingProgram, name.c_str());

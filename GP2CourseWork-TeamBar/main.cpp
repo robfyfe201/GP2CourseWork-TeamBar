@@ -288,147 +288,83 @@ void Initialise()
 	std::string shipModel = ASSET_PATH + MODEL_PATH + "newShip.fbx";
 	std::string gateModel = ASSET_PATH + MODEL_PATH + "gate.fbx";
 	std::string satelliteModel = ASSET_PATH + MODEL_PATH + "satellite.fbx";
-
-	//Model and Texture for the space station
-	GameObject * go = loadFBXFromFile(stationModel);
-	for (int i = 0; i < go->getChildCount(); i++)
+	
+	//Loading them models #messy
+	GameObject *go;
+	std::string modelArr[8] = { stationModel, gateModel, gateModel, satelliteModel, shipModel, sunModel, earthModel, moonModel };
+	std::string diffTextureArr[8] = { "/station_diff.png", "/gate_diff.png", "gate_diff.png", "satellite_diff.png", "/ship5_diff.png", "/sun1_diff.png", "/earth_diff.png", "/moon_diff.png" };
+	std::string normTextureArr[8] = { "/station_norm.png", "/gate_norm.png", "/gate_norm.png", "/satellite_norm.png", "", "", "/earth_norm.png", "/moon_norm.png" };
+	std::string names[8] = { "Station", "Gate1", "Gate2", "Satelite", "Ship", "Sun", "Earth", "Moon" };
+	
+	//If editing size of arrays/adding more object make sure you change array size
+	for ( int i = 0; i < 8; i++)
 	{
-		Material * material = new Material();
-		material->init();
-		material->loadShader(vsPath, fsPath);
-		std::string diffTexturePath = ASSET_PATH + TEXTURE_PATH + "/station_diff.png";
-		material->loadDiffuseMap(diffTexturePath);
-		std::string bumpTexturePath = ASSET_PATH + TEXTURE_PATH + "/station_norm.png";
-		material->loadBumpMap(bumpTexturePath);
-		go->getChild(i)->setMaterial(material);
+		//Load models and their materials
+		go = loadFBXFromFile(modelArr[i]);
+		for (int q = 0; q < go->getChildCount(); q++)
+		{
+			Material * material = new Material();
+			material->init();
+			material->loadShader(vsPath, fsPath);
+			std::string diffTexturePath = ASSET_PATH + TEXTURE_PATH + diffTextureArr[i];
+			material->loadDiffuseMap(diffTexturePath);
+			if (i != 5 || i != 6){
+				std::string bumpTexturePath = ASSET_PATH + TEXTURE_PATH + normTextureArr[i];
+				material->loadBumpMap(bumpTexturePath);
+			}
+			go->getChild(q)->setMaterial(material);
+		}
+		//Set transforms using conditions, array starts at 0 remember!
+		//Station Transform
+		if (i == 0) { 
+			go->getTransform()->setPosition(0.0f, 0.0f, -600.0f); 
+		} 
+		//Gate 1 Transform
+		if (i == 1) {
+			go->getTransform()->setPosition(80.0f, 0.0f, -300.0f);
+			go->getTransform()->setRotation(0.0f, 0.0f, 0.0f);
+		}
+		//Gate 2 Transform
+		if (i == 2){
+			go->getTransform()->setPosition(-80.0f, 0.0f, -300.0f);
+			go->getTransform()->setRotation(0.0f, 0.0f, 0.0f);
+		}
+		//Satellite Transform
+		if (i == 3){
+			go->getTransform()->setPosition(5.0f, 0.0f, -50.0f);
+			go->getTransform()->setRotation(0.0f, 45.0f, 0.0f);
+			go->getTransform()->setScale(0.01f, 0.01f, 0.01f);
+		}
+		//Space ship Transform
+		if (i == 4){
+			go->getTransform()->setPosition(0.0f, -5.0f, -70.0f);
+			go->getTransform()->setRotation(90.0f, 0.0f, 0.0f);
+			go->getTransform()->setScale(0.002f, 0.002f, 0.002f);
+		}
+		//Sun Transform
+		if (i == 5){
+			go->getTransform()->setPosition(0.0f, 200.0f, -1000.0f);
+			go->getTransform()->setRotation(0.0f, 90.0f, 0.0f);
+			go->getTransform()->setScale(0.5f, 0.5f, 0.5f);
+		}
+		//Earth Transform
+		if (i == 6){
+			go->getTransform()->setPosition(-300.0f, -300.0f, -1000.0f);
+			go->getTransform()->setRotation(0.0f, 0.0f, 0.0f);
+			go->getTransform()->setScale(0.6f, 0.6f, 0.6f);
+		}
+		//Moon Transform
+		if (i == 7){
+			go->getTransform()->setPosition(-150.0f, -200.0f, -1000.0f);
+			go->getTransform()->setRotation(40.0f, 0.0f, 0.0f);
+			go->getTransform()->setScale(0.08f, 0.08f, 0.08f);
+		}
+		//Set object names, so that they can be easily accessed later on
+		go->setName(names[i]);
+		//Shove 'em in a list
+		displayList.push_back(go);
 	}
-	go->getTransform()->setPosition(0.0f, 0.0f, -600.0f);
-	displayList.push_back(go);
-
-	//Model and texture for Gate 1
-	go = loadFBXFromFile(gateModel);
-	for (int i = 0; i < go->getChildCount(); i++)
-	{
-		Material * material = new Material();
-		material->init();
-		material->loadShader(vsPath, fsPath);
-		std::string diffTexturePath = ASSET_PATH + TEXTURE_PATH + "/gate_diff.png";
-		material->loadDiffuseMap(diffTexturePath);
-		std::string bumpTexturePath = ASSET_PATH + TEXTURE_PATH + "/gate_norm.png";
-		material->loadBumpMap(bumpTexturePath);
-		go->getChild(i)->setMaterial(material);
-	}
-	go->getTransform()->setPosition(80.0f, 0.0f, -300.0f);
-	go->getTransform()->setRotation(0.0f, 0.0f, 0.0f);
-	displayList.push_back(go);
-
-	//Model and texture for Gate 2
-	go = loadFBXFromFile(gateModel);
-	for (int i = 0; i < go->getChildCount(); i++)
-	{
-		Material * material = new Material();
-		material->init();
-		material->loadShader(vsPath, fsPath);
-		std::string diffTexturePath = ASSET_PATH + TEXTURE_PATH + "/gate_diff.png";
-		material->loadDiffuseMap(diffTexturePath);
-		std::string bumpTexturePath = ASSET_PATH + TEXTURE_PATH + "/gate_norm.png";
-		material->loadBumpMap(bumpTexturePath);
-		go->getChild(i)->setMaterial(material);
-	}
-	go->getTransform()->setPosition(-80.0f, 0.0f, -300.0f);
-	go->getTransform()->setRotation(0.0f, 0.0f, 0.0f);
-	displayList.push_back(go);
-
-	//Model and texture for the satellite
-	go = loadFBXFromFile(satelliteModel);
-	for (int i = 0; i < go->getChildCount(); i++)
-	{
-		Material * material = new Material();
-		material->init();
-		material->loadShader(vsPath, fsPath);
-		std::string diffTexturePath = ASSET_PATH + TEXTURE_PATH + "/satellite_diff.png";
-		material->loadDiffuseMap(diffTexturePath);
-		std::string bumpTexturePath = ASSET_PATH + TEXTURE_PATH + "/satellite_norm.png";
-		material->loadBumpMap(bumpTexturePath);
-		go->getChild(i)->setMaterial(material);
-	}
-	go->getTransform()->setPosition(5.0f, 0.0f, -50.0f);
-	go->getTransform()->setRotation(0.0f, 45.0f, 0.0f);
-	go->getTransform()->setScale(0.01f, 0.01f, 0.01f);
-	displayList.push_back(go);
-
-	//Model and texture for the space ship1
-	go = loadFBXFromFile(shipModel);
-	for (int i = 0; i < go->getChildCount(); i++)
-	{
-		Material * material = new Material();
-		material->init();
-		material->loadShader(vsPath, fsPath);
-		std::string diffTexturePath = ASSET_PATH + TEXTURE_PATH + "/ship5_diff.png";
-		material->loadDiffuseMap(diffTexturePath);
-		go->getChild(i)->setMaterial(material);
-	}
-	go->getTransform()->setPosition(0.0f, -5.0f, -70.0f);
-	go->getTransform()->setRotation(90.0f, 0.0f, 0.0f);
-	go->getTransform()->setScale(0.002f, 0.002f, 0.002f);
-	displayList.push_back(go);
-
-	//Model and Texture for sun model
-	go = loadFBXFromFile(sunModel);
-	for (int i = 0; i < go->getChildCount(); i++)
-	{
-		Material * material = new Material();
-		material->init();
-		material->loadShader(vsPath, fsPath);
-		std::string diffTexturePath = ASSET_PATH + TEXTURE_PATH + "/sun1_diff.png";
-		material->loadDiffuseMap(diffTexturePath);
-		go->getChild(i)->setMaterial(material);
-	}
-	go->getTransform()->setPosition(0.0f, 200.0f, -1000.0f);
-	go->getTransform()->setRotation(0.0f, 90.0f, 0.0f);
-	go->getTransform()->setScale(0.5f, 0.5f, 0.5f);
-	displayList.push_back(go);
-
-	//Model and texture for the earth model
-	go = loadFBXFromFile(earthModel);
-	for (int i = 0; i < go->getChildCount(); i++)
-	{
-		Material * material = new Material();
-		material->init();
-		material->loadShader(vsPath, fsPath);
-		std::string diffTexturePath = ASSET_PATH + TEXTURE_PATH + "/earth_diff.png";
-		material->loadDiffuseMap(diffTexturePath);
-		std::string bumpTexturePath = ASSET_PATH + TEXTURE_PATH + "/earth_norm.png";
-		material->loadBumpMap(bumpTexturePath);
-		go->getChild(i)->setMaterial(material);
-		go->setName("earth");
-	}
-	go->getTransform()->setPosition(-300.0f, -300.0f, -1000.0f);
-	go->getTransform()->setRotation(0.0f, 0.0f, 0.0f);
-	go->getTransform()->setScale(0.6f, 0.6f, 0.6f);
-	displayList.push_back(go);
-
-	//Model and texture for the moon model
-	go = loadFBXFromFile(moonModel);
-	for (int i = 0; i < go->getChildCount(); i++)
-	{
-		Material * material = new Material();
-		material->init();
-		material->loadShader(vsPath, fsPath);
-		std::string diffTexturePath = ASSET_PATH + TEXTURE_PATH + "/moon_diff.png";
-		material->loadDiffuseMap(diffTexturePath);
-		std::string bumpTexturePath = ASSET_PATH + TEXTURE_PATH + "/moon_norm.png";
-		material->loadBumpMap(bumpTexturePath);
-		go->getChild(i)->setMaterial(material);
-	}
-	go->getTransform()->setPosition(-150.0f, -200.0f, -1000.0f);
-	go->getTransform()->setRotation(40.0f, 0.0f, 0.0f);
-	go->getTransform()->setScale(0.08f, 0.08f, 0.08f);
-	displayList.push_back(go);
 }
-
-
-
 
 //Function to update the game state
 void update()
