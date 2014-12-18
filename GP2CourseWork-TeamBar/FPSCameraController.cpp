@@ -13,8 +13,8 @@ using glm::vec3;
 FPSCameraController::FPSCameraController()
 {
 	m_AttachedCamera = NULL;
-	m_ForwardSpeed = 250;
-	m_StrafeSpeed = 250;
+	m_ForwardSpeed = 400;
+	m_StrafeSpeed = 400;
 	m_LookSpeed = 3;
 	m_Type = "FPSCameraController";
 	m_Name = m_Type;

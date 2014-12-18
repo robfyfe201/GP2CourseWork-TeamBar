@@ -307,6 +307,8 @@ void Initialise()
 
 	mainCamera->setCamera(c);
 
+	//All input for the mouse and keyboard is mainly contrlled in the FPSCameraController class
+	//All changes to the cameras behaviour is handled in that class also
 	FPSCameraController * controller = new FPSCameraController();
 	controller->setCamera(c);
 
