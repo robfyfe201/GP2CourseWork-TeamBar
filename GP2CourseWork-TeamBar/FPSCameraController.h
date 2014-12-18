@@ -7,11 +7,15 @@ class Camera;
 
 class FPSCameraController :public Component
 {
+	float camPitch();
+	float camYaw();
 public:
 	FPSCameraController();
 	~FPSCameraController();
 
 	void update();
+	void moveCamera();
+	void lockCamera();
 
 	void setCamera(Camera * cam);
 	void setSpeed(float speed);

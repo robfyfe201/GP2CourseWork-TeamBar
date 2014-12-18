@@ -182,6 +182,9 @@ void initOpenGL()
 	//Enable depth testing
 	glEnable(GL_DEPTH_TEST);
 
+	//Enable backface culling
+	glEnable(GL_CULL_FACE);
+
 	//The depth test to go
 	glDepthFunc(GL_LEQUAL);
 
@@ -206,17 +209,17 @@ void setViewport(int width, int height)
 void createSkyBox()
 {
 	Vertex triangleData[] = {
-		{ vec3(-10.0f, 10.0f, 10.0f) },// Top Left
-		{ vec3(-10.0f, -10.0f, 10.0f) },// Bottom Left
-		{ vec3(10.0f, -10.0f, 10.0f) }, //Bottom Right
-		{ vec3(10.0f, 10.0f, 10.0f) },// Top Right
+		{ vec3(-20.0f, 20.0f, 20.0f) },// Top Left
+		{ vec3(-20.0f, -20.0f, 20.0f) },// Bottom Left
+		{ vec3(20.0f, -20.0f, 20.0f) }, //Bottom Right
+		{ vec3(20.0f, 20.0f, 20.0f) },// Top Right
 
 
 		//back
-		{ vec3(-10.0f, 10.0f, -10.0f) },// Top Left
-		{ vec3(-10.0f, -10.0f, -10.0f) },// Bottom Left
-		{ vec3(10.0, -10.0f, -10.0f) }, //Bottom Right
-		{ vec3(10.0f, 10.0f, -10.0f) }// Top Right
+		{ vec3(-20.0f, 20.0f, -20.0f) },// Top Left
+		{ vec3(-20.0f, -20.0f, -20.0f) },// Bottom Left
+		{ vec3(20.0, -20.0f, -20.0f) }, //Bottom Right
+		{ vec3(20.0f, 20.0f, -20.0f) }// Top Right
 	};
 
 
@@ -300,7 +303,7 @@ void Initialise()
 	c->setAspectRatio((float)(WINDOW_WIDTH / WINDOW_HEIGHT));
 	c->setFOV(45.0f);
 	c->setNearClip(0.1f);
-	c->setFarClip(1000.0f);
+	c->setFarClip(10000.0f);
 	vec3 rot = t->getRotation();
 	vec3 lookAt = Camera::calculateLookAtFromAngle(rot);
 	c->setLook(lookAt.x, lookAt.y, lookAt.z);
@@ -364,11 +367,11 @@ void Initialise()
 		//Set transforms using conditions, array starts at 0 remember!
 		//Station Transform
 		if (i == 0) {
-			go->getTransform()->setPosition(0.0f, 0.0f, -600.0f);
+			go->getTransform()->setPosition(0.0f, 0.0f, -200.0f);
 		}
 		//Gate 1 Transform
 		if (i == 1) {
-			go->getTransform()->setPosition(80.0f, 0.0f, -300.0f);
+			go->getTransform()->setPosition(80.0f, 0.0f, -100.0f);
 			go->getTransform()->setRotation(0.0f, 0.0f, 0.0f);
 		}
 		//Gate 2 Transform
@@ -378,32 +381,32 @@ void Initialise()
 		}
 		//Satellite Transform
 		if (i == 3){
-			go->getTransform()->setPosition(5.0f, 0.0f, -50.0f);
+			go->getTransform()->setPosition(5.0f, 0.0f, -200.0f);
 			go->getTransform()->setRotation(0.0f, 45.0f, 0.0f);
 			go->getTransform()->setScale(0.01f, 0.01f, 0.01f);
 		}
 		//Space ship Transform
 		if (i == 4){
-			go->getTransform()->setPosition(0.0f, -5.0f, -70.0f);
-			go->getTransform()->setRotation(90.0f, 0.0f, 0.0f);
+			go->getTransform()->setPosition(0.0f, -5.0f, -200.0f);
+			go->getTransform()->setRotation(0.0f, 0.0f, 0.0f);
 			go->getTransform()->setScale(0.002f, 0.002f, 0.002f);
 		}
 		//Sun Transform
 		if (i == 5){
-			go->getTransform()->setPosition(0.0f, 200.0f, -1000.0f);
+			go->getTransform()->setPosition(0.0f, 200.0f, -8000.0f);
 			go->getTransform()->setRotation(0.0f, 90.0f, 0.0f);
-			go->getTransform()->setScale(0.5f, 0.5f, 0.5f);
+			go->getTransform()->setScale(1.0f, 1.0f, 1.0f);
 		}
 		//Earth Transform
 		if (i == 6){
-			go->getTransform()->setPosition(-300.0f, -300.0f, -1000.0f);
-			go->getTransform()->setRotation(0.0f, 0.0f, 0.0f);
-			go->getTransform()->setScale(0.6f, 0.6f, 0.6f);
+			go->getTransform()->setPosition(-300.0f, -300.0f, -500.0f);
+			go->getTransform()->setRotation(0.0f, 20.0f, 0.0f);
+			go->getTransform()->setScale(0.5f, 0.5f, 0.5f);
 		}
 		//Moon Transform
 		if (i == 7){
-			go->getTransform()->setPosition(-150.0f, -200.0f, -1000.0f);
-			go->getTransform()->setRotation(40.0f, 0.0f, 0.0f);
+			go->getTransform()->setPosition(-150.0f, -200.0f, -500.0f);
+			go->getTransform()->setRotation(0.0f, 0.0f, 0.0f);
 			go->getTransform()->setScale(0.08f, 0.08f, 0.08f);
 		}
 		//Set object names, so that they can be easily accessed later on
