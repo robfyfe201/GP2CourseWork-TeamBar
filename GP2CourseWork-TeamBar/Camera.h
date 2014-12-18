@@ -31,6 +31,11 @@ public:
 
 	mat4& getView();
 	mat4& getProjection();
+
+	vec3& getLookAt();
+	vec3& getUp();
+
+	static vec3& calculateLookAtFromAngle(const vec3& rot);
 protected:
 private:
 	vec3 m_LookAt;

@@ -20,14 +20,18 @@ public:
 	virtual void destroy();
 
 	const std::string& getType();
+	const std::string& getName();
 
 	bool isActive();
 
 	void toggleActive();
 
 	void setParent(GameObject * object);
+	GameObject * getParent();
+	void setName(const std::string& name);
 protected:
 	std::string m_Type;
+	std::string m_Name;
 	bool m_Active;
 	GameObject * m_Parent;
 private:

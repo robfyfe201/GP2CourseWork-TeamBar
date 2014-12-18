@@ -1,3 +1,4 @@
+#include <iostream>
 #include <GL/glew.h>
 //maths headers
 #include <glm/glm.hpp>
@@ -8,16 +9,37 @@ using glm::vec3;
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#ifdef __APPLE__
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_opengl.h>
+#include <OpenGL/glu.h>
+#include <CoreFoundation/CoreFoundation.h>
+#include <SDL2_ttf/SDL_ttf.h>
+#include <SDL2_image/SDL_image.h>
+#elif WIN32
 #include <SDL.h>
 #include <SDL_opengl.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 #include <gl/GLU.h>
+#endif
 
 #include <vector>
 
 #ifdef _DEBUG && WIN32
 const std::string ASSET_PATH = "assets/";
+const std::string SHADER_PATH = "shaders/";
+const std::string TEXTURE_PATH = "textures/";
+const std::string FONT_PATH = "fonts/";
+const std::string MODEL_PATH = "models/";
+#elif __APPLE__
+const std::string ASSET_PATH;
+const std::string SHADER_PATH;
+const std::string TEXTURE_PATH;
+const std::string FONT_PATH;
+const std::string MODEL_PATH;
+#else
+const std::string ASSET_PATH = "/assets/";
 const std::string SHADER_PATH = "shaders/";
 const std::string TEXTURE_PATH = "textures/";
 const std::string FONT_PATH = "fonts/";
@@ -35,7 +57,12 @@ const std::string MODEL_PATH = "models/";
 #include "Camera.h"
 #include "Light.h"
 #include "FBXLoader.h"
+#include "FPSCameraController.h"
+
 #include "SkyboxMaterial.h"
+
+#include "Input.h"
+#include "Timer.h"
 
 
 //SDL Window
@@ -44,9 +71,9 @@ SDL_Window * window = NULL;
 SDL_GLContext glcontext = NULL;
 
 //Window Width
-const int WINDOW_WIDTH = 1000;
+const int WINDOW_WIDTH = 1200;
 //Window Height
-const int WINDOW_HEIGHT = 600;
+const int WINDOW_HEIGHT = 900;
 
 bool running = true;
 
@@ -56,6 +83,7 @@ std::vector<GameObject*> displayList;
 GameObject * mainCamera;
 GameObject * mainLight;
 GameObject * skyBox = NULL;
+
 
 void CheckForErrors()
 {
@@ -70,7 +98,7 @@ void InitWindow(int width, int height, bool fullscreen)
 {
 	//Create a window
 	window = SDL_CreateWindow(
-		"Lab 6",             // window title
+		"Lab 9",             // window title
 		SDL_WINDOWPOS_CENTERED,     // x position, centered
 		SDL_WINDOWPOS_CENTERED,     // y position, centered
 		width,                        // width, in pixels
@@ -83,6 +111,12 @@ void InitWindow(int width, int height, bool fullscreen)
 
 void CleanUp()
 {
+	if (skyBox)
+	{
+		skyBox->destroy();
+		delete skyBox;
+		skyBox = NULL;
+	}
 	auto iter = displayList.begin();
 	while (iter != displayList.end())
 	{
@@ -101,6 +135,7 @@ void CleanUp()
 	displayList.clear();
 
 	// clean up, reverse order!!!
+	Input::getInput().destroy();
 	SDL_GL_DeleteContext(glcontext);
 	SDL_DestroyWindow(window);
 	IMG_Quit();
@@ -108,6 +143,11 @@ void CleanUp()
 	SDL_Quit();
 }
 
+void initInput()
+{
+	const std::string inputDBFilename = ASSET_PATH + "gamecontrollerdb.txt";
+	Input::getInput().init(inputDBFilename);
+}
 
 
 //Function to initialise OpenGL
@@ -166,17 +206,17 @@ void setViewport(int width, int height)
 void createSkyBox()
 {
 	Vertex triangleData[] = {
-			{ vec3(-10.0f, 10.0f, 10.0f) },// Top Left
-			{ vec3(-10.0f, -10.0f, 10.0f) },// Bottom Left
-			{ vec3(10.0f, -10.0f, 10.0f) }, //Bottom Right
-			{ vec3(10.0f, 10.0f, 10.0f) },// Top Right
+		{ vec3(-10.0f, 10.0f, 10.0f) },// Top Left
+		{ vec3(-10.0f, -10.0f, 10.0f) },// Bottom Left
+		{ vec3(10.0f, -10.0f, 10.0f) }, //Bottom Right
+		{ vec3(10.0f, 10.0f, 10.0f) },// Top Right
 
 
-			//back
-			{ vec3(-10.0f, 10.0f, -10.0f) },// Top Left
-			{ vec3(-10.0f, -10.0f, -10.0f) },// Bottom Left
-			{ vec3(10.0, -10.0f, -10.0f) }, //Bottom Right
-			{ vec3(10.0f, 10.0f, -10.0f) }// Top Right
+		//back
+		{ vec3(-10.0f, 10.0f, -10.0f) },// Top Left
+		{ vec3(-10.0f, -10.0f, -10.0f) },// Bottom Left
+		{ vec3(10.0, -10.0f, -10.0f) }, //Bottom Right
+		{ vec3(10.0f, 10.0f, -10.0f) }// Top Right
 	};
 
 
@@ -237,14 +277,17 @@ void createSkyBox()
 	skyBox->setMaterial(material);
 	skyBox->setTransform(t);
 	skyBox->setMesh(pMesh);
+
+	CheckForErrors();
 }
-	
+
 void Initialise()
 {
-	std::string vsPath = ASSET_PATH + SHADER_PATH + "/DirectionalLightTextureVS.glsl";
-	std::string fsPath = ASSET_PATH + SHADER_PATH + "/DirectionalLightTextureFS.glsl";
 	createSkyBox();
+	std::string vsPath = ASSET_PATH + SHADER_PATH + "/textureVS.glsl";
+	std::string fsPath = ASSET_PATH + SHADER_PATH + "/textureFS.glsl";
 
+	//postProcessor.init(WINDOW_WIDTH, WINDOW_HEIGHT, vsPath, fsPath);
 
 	mainCamera = new GameObject();
 	mainCamera->setName("MainCamera");
@@ -258,8 +301,16 @@ void Initialise()
 	c->setFOV(45.0f);
 	c->setNearClip(0.1f);
 	c->setFarClip(1000.0f);
+	vec3 rot = t->getRotation();
+	vec3 lookAt = Camera::calculateLookAtFromAngle(rot);
+	c->setLook(lookAt.x, lookAt.y, lookAt.z);
 
 	mainCamera->setCamera(c);
+
+	FPSCameraController * controller = new FPSCameraController();
+	controller->setCamera(c);
+
+	mainCamera->addComponent(controller);
 	displayList.push_back(mainCamera);
 
 	mainLight = new GameObject();
@@ -273,12 +324,6 @@ void Initialise()
 	mainLight->setLight(light);
 	displayList.push_back(mainLight);
 
-	//alternative sytanx
-	for (auto iter = displayList.begin(); iter != displayList.end(); iter++)
-	{
-		(*iter)->init();
-	}
-
 	//List of models being used in the scene
 	//Will want to put all of these into an array for convience
 	std::string stationModel = ASSET_PATH + MODEL_PATH + "station.fbx";
@@ -288,16 +333,16 @@ void Initialise()
 	std::string shipModel = ASSET_PATH + MODEL_PATH + "newShip.fbx";
 	std::string gateModel = ASSET_PATH + MODEL_PATH + "gate.fbx";
 	std::string satelliteModel = ASSET_PATH + MODEL_PATH + "satellite.fbx";
-	
+
 	//Loading them models #messy
 	GameObject *go;
 	std::string modelArr[8] = { stationModel, gateModel, gateModel, satelliteModel, shipModel, sunModel, earthModel, moonModel };
 	std::string diffTextureArr[8] = { "/station_diff.png", "/gate_diff.png", "gate_diff.png", "satellite_diff.png", "/ship5_diff.png", "/sun1_diff.png", "/earth_diff.png", "/moon_diff.png" };
 	std::string normTextureArr[8] = { "/station_norm.png", "/gate_norm.png", "/gate_norm.png", "/satellite_norm.png", "", "", "/earth_norm.png", "/moon_norm.png" };
 	std::string names[8] = { "Station", "Gate1", "Gate2", "Satelite", "Ship", "Sun", "Earth", "Moon" };
-	
+
 	//If editing size of arrays/adding more object make sure you change array size
-	for ( int i = 0; i < 8; i++)
+	for (int i = 0; i < 8; i++)
 	{
 		//Load models and their materials
 		go = loadFBXFromFile(modelArr[i]);
@@ -316,9 +361,9 @@ void Initialise()
 		}
 		//Set transforms using conditions, array starts at 0 remember!
 		//Station Transform
-		if (i == 0) { 
-			go->getTransform()->setPosition(0.0f, 0.0f, -600.0f); 
-		} 
+		if (i == 0) {
+			go->getTransform()->setPosition(0.0f, 0.0f, -600.0f);
+		}
 		//Gate 1 Transform
 		if (i == 1) {
 			go->getTransform()->setPosition(80.0f, 0.0f, -300.0f);
@@ -364,18 +409,22 @@ void Initialise()
 		//Shove 'em in a list
 		displayList.push_back(go);
 	}
+
+	Timer::getTimer().start();
 }
 
 //Function to update the game state
 void update()
 {
+	Timer::getTimer().update();
 	skyBox->update();
-
 	//alternative sytanx
 	for (auto iter = displayList.begin(); iter != displayList.end(); iter++)
 	{
 		(*iter)->update();
 	}
+
+	Input::getInput().update();
 }
 
 void renderGameObject(GameObject * pObject)
@@ -387,6 +436,7 @@ void renderGameObject(GameObject * pObject)
 
 	Mesh * currentMesh = pObject->getMesh();
 	Transform * currentTransform = pObject->getTransform();
+	//we know is going to be a standard material
 	Material * currentMaterial = (Material*)pObject->getMaterial();
 
 	if (currentMesh && currentMaterial && currentTransform)
@@ -408,6 +458,7 @@ void renderGameObject(GameObject * pObject)
 		GLint diffuseTextureLocation = currentMaterial->getUniformLocation("diffuseMap");
 		GLint specTextureLocation = currentMaterial->getUniformLocation("specMap");
 		GLint bumpTextureLocation = currentMaterial->getUniformLocation("bumpMap");
+		GLint heightTextureLocation = currentMaterial->getUniformLocation("heightMap");
 		Camera * cam = mainCamera->getCamera();
 		Light* light = mainLight->getLight();
 
@@ -444,8 +495,11 @@ void renderGameObject(GameObject * pObject)
 		glUniform1i(diffuseTextureLocation, 0);
 		glUniform1i(specTextureLocation, 1);
 		glUniform1i(bumpTextureLocation, 2);
+		glUniform1i(heightTextureLocation, 3);
 
 		glDrawElements(GL_TRIANGLES, currentMesh->getIndexCount(), GL_UNSIGNED_INT, 0);
+
+		currentMaterial->unbind();
 	}
 
 	for (int i = 0; i < pObject->getChildCount(); i++)
@@ -473,7 +527,9 @@ void renderSkyBox()
 		GLint cubeTextureLocation = currentMaterial->getUniformLocation("cubeTexture");
 
 		glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(cam->getProjection()));
-		glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(cam->getView()));
+		mat4 rotationY = glm::rotate(mat4(1.0f), mainCamera->getTransform()->getRotation().y, vec3(0.0f, 1.0f, 0.0f));
+		mat4 rotationX = glm::rotate(mat4(1.0f), mainCamera->getTransform()->getRotation().x, vec3(1.0f, 0.0f, 0.0f));
+		glUniformMatrix4fv(viewLocation, 1, GL_FALSE, glm::value_ptr(rotationY*rotationX));
 		glUniform4fv(cameraLocation, 1, glm::value_ptr(mainCamera->getTransform()->getPosition()));
 		glUniform1i(cubeTextureLocation, 0);
 
@@ -487,8 +543,9 @@ void renderSkyBox()
 //Function to render(aka draw)
 void render()
 {
-	//old imediate mode!
-	//Set the clear colour(background)
+	//Bind Framebuffer
+	//postProcessor.bind();
+
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClearDepth(1.0f);
 	//clear the colour and depth buffer
@@ -504,10 +561,28 @@ void render()
 
 	SDL_GL_SwapWindow(window);
 }
-	
+
+
+
 //Main Method
 int main(int argc, char * arg[])
 {
+
+#ifdef __APPLE__
+	CFBundleRef mainBundle = CFBundleGetMainBundle();
+	CFURLRef resourcesURL = CFBundleCopyResourcesDirectoryURL(mainBundle);
+	char path[PATH_MAX];
+	if (!CFURLGetFileSystemRepresentation(resourcesURL, TRUE, (UInt8 *)path, PATH_MAX))
+	{
+		// error!
+	}
+	CFRelease(resourcesURL);
+
+	chdir(path);
+	std::cout << "Current Path: " << path << std::endl;
+#endif
+
+
 	// init everyting - SDL, if it is nonzero we have a problem
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
 	{
@@ -534,6 +609,8 @@ int main(int argc, char * arg[])
 	//Set our viewport
 	setViewport(WINDOW_WIDTH, WINDOW_HEIGHT);
 
+	initInput();
+
 	Initialise();
 
 	//Value to hold the event generated by SDL
@@ -541,20 +618,84 @@ int main(int argc, char * arg[])
 	//Game Loop
 	while (running)
 	{
+		SDL_SetRelativeMouseMode(SDL_TRUE);
 		//While we still have events in the queue
-		while (SDL_PollEvent(&event)) {
-			//Get event type
-			if (event.type == SDL_QUIT || event.type == SDL_WINDOWEVENT_CLOSE) {
-				//set our boolean which controls the loop to false
+		while (SDL_PollEvent(&event)) 
+		{
+			switch (event.type)
+			{
+			case SDL_QUIT:
+			case SDL_WINDOWEVENT_CLOSE:
+			{
 				running = false;
+				break;
+			}
+			case SDL_KEYDOWN:
+			{
+				Input::getInput().getKeyboard()->setKeyDown(event.key.keysym.sym);
+				if (Input::getInput().getKeyboard()->isKeyDown(SDLK_ESCAPE))
+				{
+					running = false;
+				}
+				break;
+			}
+			case SDL_KEYUP:
+			{
+				Input::getInput().getKeyboard()->setKeyUp(event.key.keysym.sym);
+				break;
+			}
+			case SDL_MOUSEMOTION:
+			{
+				Input::getInput().getMouse()->setMousePosition(event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel);
+				break;
+			}
+			case SDL_MOUSEBUTTONDOWN:
+			{
+				Input::getInput().getMouse()->setMouseButtonDown(event.button.button);
+				break;
+			}
+			case SDL_MOUSEBUTTONUP:
+			{
+				Input::getInput().getMouse()->setMouseButtonUp(event.button.button);
+				break;
+			}
+			case SDL_CONTROLLERAXISMOTION:
+			{
+				 int controllerID = event.caxis.which;
+				 short axisID = event.caxis.axis;
+			     int axisValue = event.caxis.value;
+			     //filter results between -3200 and 3200(are in the ‘dead zone’)
+				 if (axisValue > Joypad::DeadzoneNeg && axisValue < Joypad::DeadzonePos)
+				 {
+					axisValue = 0;
+				 }
+
+				 Input::getInput().getJoypad(controllerID)->setAxisValue(axisID, axisValue);
+
+				 break;
+			}
+			case SDL_CONTROLLERBUTTONDOWN:
+			{
+				 int controllerID = event.cbutton.which;
+				 short buttonID = event.cbutton.button;
+
+				 Input::getInput().getJoypad(controllerID)->setButtonDown(buttonID);
+				 break;
+			}
+			case SDL_CONTROLLERBUTTONUP:
+			{
+				 int controllerID = event.cbutton.which;
+				 short buttonID = event.cbutton.button;
+
+				 Input::getInput().getJoypad(controllerID)->setButtonUp(buttonID);
+				 break;
 			}
 		}
+	}
 		update();
 		//render
 		render();
-	}
-	
+}
 	CleanUp();
-
 	return 0;
 }

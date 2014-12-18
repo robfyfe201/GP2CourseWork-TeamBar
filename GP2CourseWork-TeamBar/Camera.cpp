@@ -69,3 +69,24 @@ mat4& Camera::getProjection()
 {
 	return m_Projection;
 }
+
+vec3& Camera::getLookAt()
+{
+	return m_LookAt;
+}
+
+vec3& Camera::getUp()
+{
+	return m_Up;
+}
+
+vec3& Camera::calculateLookAtFromAngle(const vec3& rot)
+{
+	vec3 lookAt = vec3(1.0f, 1.0f, 1.0f);
+
+	lookAt.x = (cos(rot.x)*cos(rot.y));
+	lookAt.y = (sin(rot.y));
+	lookAt.z = (sin(rot.x)*cos(rot.y));
+
+	return lookAt;
+}

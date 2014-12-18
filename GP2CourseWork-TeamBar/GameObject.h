@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+
 class Component;
 class Transform;
 class Mesh;
@@ -49,8 +50,8 @@ public:
 	int getChildCount();
 	GameObject * getChild(int index);
 
-
-
+	Component * getComponentByType(const std::string& type);
+	Component * getComponentByName(const std::string& name);
 protected:
 private:
 	std::vector<Component*> m_Components;
