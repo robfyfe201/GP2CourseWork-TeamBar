@@ -296,7 +296,7 @@ void Initialise()
 	mainCamera->setName("MainCamera");
 
 	Transform *t = new Transform();
-	t->setPosition(0.0f, 0.0f, 2.0f);
+	t->setPosition(0.0f, 0.0f, -5.0f);
 	mainCamera->setTransform(t);
 
 	Camera * c = new Camera();
@@ -329,6 +329,7 @@ void Initialise()
 	mainLight->setLight(light);
 	displayList.push_back(mainLight);
 
+	
 	//List of models being used in the scene
 	//Will want to put all of these into an array for convience
 	std::string stationModel = ASSET_PATH + MODEL_PATH + "station.fbx";
@@ -342,7 +343,7 @@ void Initialise()
 	//Loading them models #messy
 	GameObject *go;
 	std::string modelArr[8] = { stationModel, gateModel, gateModel, satelliteModel, shipModel, sunModel, earthModel, moonModel };
-	std::string diffTextureArr[8] = { "/station_diff.png", "/gate_diff.png", "gate_diff.png", "satellite_diff.png", "/ship5_diff.png", "/sun1_diff.png", "/earth_diff.png", "/moon_diff.png" };
+	std::string diffTextureArr[8] = { "/station_diff.png", "/gate_diff.png", "/gate_diff.png", "/satellite_diff.png", "/ship5_diff.png", "/sun1_diff.png", "/earth_diff.png", "/moon_diff.png" };
 	std::string normTextureArr[8] = { "/station_norm.png", "/gate_norm.png", "/gate_norm.png", "/satellite_norm.png", "", "", "/earth_norm.png", "/moon_norm.png" };
 	std::string names[8] = { "Station", "Gate1", "Gate2", "Satelite", "Ship", "Sun", "Earth", "Moon" };
 
@@ -367,45 +368,45 @@ void Initialise()
 		//Set transforms using conditions, array starts at 0 remember!
 		//Station Transform
 		if (i == 0) {
-			go->getTransform()->setPosition(0.0f, 0.0f, -200.0f);
+			go->getTransform()->setPosition(0.0f, 0.0f, 200.0f);
 		}
 		//Gate 1 Transform
 		if (i == 1) {
-			go->getTransform()->setPosition(80.0f, 0.0f, -100.0f);
+			go->getTransform()->setPosition(80.0f, 0.0f, 100.0f);
 			go->getTransform()->setRotation(0.0f, 0.0f, 0.0f);
 		}
 		//Gate 2 Transform
 		if (i == 2){
-			go->getTransform()->setPosition(-80.0f, 0.0f, -300.0f);
+			go->getTransform()->setPosition(-80.0f, 0.0f, 300.0f);
 			go->getTransform()->setRotation(0.0f, 0.0f, 0.0f);
 		}
 		//Satellite Transform
 		if (i == 3){
-			go->getTransform()->setPosition(5.0f, 0.0f, -200.0f);
+			go->getTransform()->setPosition(5.0f, 0.0f, 200.0f);
 			go->getTransform()->setRotation(0.0f, 45.0f, 0.0f);
 			go->getTransform()->setScale(0.01f, 0.01f, 0.01f);
 		}
 		//Space ship Transform
 		if (i == 4){
-			go->getTransform()->setPosition(0.0f, -5.0f, -200.0f);
+			go->getTransform()->setPosition(0.0f, -5.0f, 200.0f);
 			go->getTransform()->setRotation(0.0f, 0.0f, 0.0f);
 			go->getTransform()->setScale(0.002f, 0.002f, 0.002f);
 		}
 		//Sun Transform
 		if (i == 5){
-			go->getTransform()->setPosition(0.0f, 200.0f, -8000.0f);
+			go->getTransform()->setPosition(0.0f, 200.0f, 8000.0f);
 			go->getTransform()->setRotation(0.0f, 90.0f, 0.0f);
 			go->getTransform()->setScale(1.0f, 1.0f, 1.0f);
 		}
 		//Earth Transform
 		if (i == 6){
-			go->getTransform()->setPosition(-300.0f, -300.0f, -500.0f);
+			go->getTransform()->setPosition(-300.0f, -300.0f, 500.0f);
 			go->getTransform()->setRotation(0.0f, 20.0f, 0.0f);
 			go->getTransform()->setScale(0.5f, 0.5f, 0.5f);
 		}
 		//Moon Transform
 		if (i == 7){
-			go->getTransform()->setPosition(-150.0f, -200.0f, -500.0f);
+			go->getTransform()->setPosition(-150.0f, -200.0f, 500.0f);
 			go->getTransform()->setRotation(0.0f, 0.0f, 0.0f);
 			go->getTransform()->setScale(0.08f, 0.08f, 0.08f);
 		}

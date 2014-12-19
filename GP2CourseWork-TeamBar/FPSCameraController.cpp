@@ -14,8 +14,8 @@ using glm::vec3;
 FPSCameraController::FPSCameraController()
 {
 	m_AttachedCamera = NULL;
-	m_ForwardSpeed = 100;
-	m_StrafeSpeed = 100;
+	m_ForwardSpeed = 350;
+	m_StrafeSpeed = 350;
 	m_LookSpeed = 2.0f;
 	m_Type = "FPSCameraController";
 	m_Name = m_Type;
@@ -27,6 +27,7 @@ FPSCameraController::~FPSCameraController()
 }
 void FPSCameraController::update()
 {
+
     if (m_AttachedCamera)
     {
         //lets just use standard FPS Controllers(mouse & keyboard)
