@@ -31,6 +31,7 @@ void Mouse::setMousePosition(int absX, int absY, int relX, int relY)
 	m_RelMouseY = relY;
 }
 
+
 void Mouse::setMouseButtonDown(int buttonIndex)
 {
 	m_MouseButtonsDown[buttonIndex] = true;

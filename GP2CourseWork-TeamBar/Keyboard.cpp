@@ -21,7 +21,7 @@ void Keyboard::update()
 		keysDown[i] = false;
 		keysUp[i] = false;
 	}
-
+	
 }
 
 void Keyboard::setKeyDown(short index)
