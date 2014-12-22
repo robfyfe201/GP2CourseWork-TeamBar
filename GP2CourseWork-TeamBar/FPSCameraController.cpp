@@ -18,7 +18,7 @@ FPSCameraController::FPSCameraController()
 	m_StrafeSpeed = 350;
 	m_LookSpeed = 2.0f;
 	m_Type = "FPSCameraController";
-	m_Name = m_Type;
+	m_Name = m_Type
 }
 
 FPSCameraController::~FPSCameraController()
