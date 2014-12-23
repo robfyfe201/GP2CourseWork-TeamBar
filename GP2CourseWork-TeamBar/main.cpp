@@ -406,11 +406,10 @@ void Initialise()
 			go->getTransform()->setPosition(50.0f, 0.0f, 550.0f);
 			go->getTransform()->setRotation(0.0f, 0.0f, 0.0f);
 		}
-		//Gate 2 Transform
-		if (i == 2){
-			go->getTransform()->setPosition(0.0f, 0.0f, 1000.0f);
+		//Gate 1 Transform
+		if (i == 2) {
+			go->getTransform()->setPosition(-50.0f, 0.0f, 550.0f);
 			go->getTransform()->setRotation(0.0f, 0.0f, 0.0f);
-			go->getTransform()->setScale(4.3f, 4.3f, 4.3f);
 		}
 		//Satellite Transform
 		if (i == 3){
@@ -615,7 +614,7 @@ void render()
 	SDL_GL_SwapWindow(window);
 }
 
-void Translation()
+/*void Translation()
 { 
 	for (auto iter = displayList.begin(); iter != displayList.end(); iter++)
 	{
@@ -679,7 +678,7 @@ void Rotation()
 		sunRotZ += 0.01f;
 		earRotZ += 0.005f;
 	}
-}
+}*/
 //Main Method
 int main(int argc, char * arg[])
 {
@@ -846,7 +845,7 @@ int main(int argc, char * arg[])
 		m_AttachedCamera->setLook(currentPos.x + direction.x, currentPos.y + direction.y, currentPos.z + direction.z);
 
 
-		Rotation();
+		//Rotation();
 		update();
 		//render
 		render();
