@@ -131,6 +131,8 @@
     <None Include="assets\shaders\DirectionalLightTextureFS.glsl" />
     <None Include="assets\shaders\DirectionalLightTextureVS.glsl" />
     <None Include="assets\shaders\passThroughVS.glsl" />
+    <None Include="assets\shaders\PointLightTextureFS.glsl" />
+    <None Include="assets\shaders\PointLightTextureVS.glsl" />
     <None Include="assets\shaders\simpleFS.glsl" />
     <None Include="assets\shaders\simpleVS.glsl" />
     <None Include="assets\shaders\skyFS.glsl" />

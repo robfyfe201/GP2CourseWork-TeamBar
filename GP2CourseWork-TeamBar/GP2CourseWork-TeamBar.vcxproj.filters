@@ -152,5 +152,7 @@
     <None Include="assets\shaders\skyFS.glsl" />
     <None Include="assets\shaders\colourFilterPostFS.glsl" />
     <None Include="assets\shaders\passThroughVS.glsl" />
+    <None Include="assets\shaders\PointLightTextureFS.glsl" />
+    <None Include="assets\shaders\PointLightTextureVS.glsl" />
   </ItemGroup>
 </Project>

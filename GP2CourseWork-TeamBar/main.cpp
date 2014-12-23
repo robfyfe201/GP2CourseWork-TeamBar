@@ -1,6 +1,6 @@
 #include <iostream>
-#include <string>
 #include <GL/glew.h>
+#include <string>
 //maths headers
 #include <glm/glm.hpp>
 using glm::mat4;
@@ -58,6 +58,7 @@ const std::string MODEL_PATH = "models/";
 #include "Camera.h"
 #include "Light.h"
 #include "FBXLoader.h"
+#include "FPSCameraController.h"
 
 #include "SkyboxMaterial.h"
 
@@ -71,9 +72,9 @@ SDL_Window * window = NULL;
 SDL_GLContext glcontext = NULL;
 
 //Window Width
-const int WINDOW_WIDTH = 1200;
+const int WINDOW_WIDTH = 800;
 //Window Height
-const int WINDOW_HEIGHT = 900;
+const int WINDOW_HEIGHT = 600;
 
 bool running = true;
 
@@ -83,6 +84,7 @@ std::vector<GameObject*> displayList;
 GameObject * mainCamera;
 GameObject * mainLight;
 GameObject * skyBox = NULL;
+
 Camera * c = new Camera();
 
 //Camera Variables
@@ -296,8 +298,8 @@ void createSkyBox()
 void Initialise()
 {
 	createSkyBox();
-	std::string vsPath = ASSET_PATH + SHADER_PATH + "/textureVS.glsl";
-	std::string fsPath = ASSET_PATH + SHADER_PATH + "/textureFS.glsl";
+	std::string vsPath = ASSET_PATH + SHADER_PATH + "/PointLightTextureVS.glsl";
+	std::string fsPath = ASSET_PATH + SHADER_PATH + "/PointLightTextureFS.glsl";
 
 	//postProcessor.init(WINDOW_WIDTH, WINDOW_HEIGHT, vsPath, fsPath);
 
@@ -317,20 +319,21 @@ void Initialise()
 	c->setLook(lookAt.x, lookAt.y, lookAt.z);
 
 	mainCamera->setCamera(c);
+
+	//All input for the mouse and keyboard is mainly contrlled in the FPSCameraController class
+	//All changes to the cameras behaviour is handled in that class also
+
 	displayList.push_back(mainCamera);
 
 	mainLight = new GameObject();
 	mainLight->setName("MainLight");
 
-	t = new Transform();
-	t->setPosition(0.0f, 0.0f, 0.0f);
-	mainLight->setTransform(t);
-
 	Light * light = new Light();
 	mainLight->setLight(light);
+	light->setPosition(0.0f, 0.0f, 1000.0f);
 	displayList.push_back(mainLight);
 
-	
+
 	//List of models being used in the scene
 	//Will want to put all of these into an array for convience
 	std::string stationModel = ASSET_PATH + MODEL_PATH + "station.fbx";
@@ -395,13 +398,13 @@ void Initialise()
 		}
 		//Sun Transform
 		if (i == 5){
-			go->getTransform()->setPosition(0.0f, 200.0f, 8000.0f);
+			go->getTransform()->setPosition(0.0f, 200.0f, 3000.0f);
 			go->getTransform()->setRotation(0.0f, 90.0f, 0.0f);
 			go->getTransform()->setScale(1.0f, 1.0f, 1.0f);
 		}
 		//Earth Transform
 		if (i == 6){
-			go->getTransform()->setPosition(-300.0f, -300.0f, 500.0f);
+			go->getTransform()->setPosition(0.0f, 200.0f, 500.0f);
 			go->getTransform()->setRotation(0.0f, 20.0f, 0.0f);
 			go->getTransform()->setScale(0.5f, 0.5f, 0.5f);
 		}
@@ -423,6 +426,7 @@ void Initialise()
 //Function to update the game state
 void update()
 {
+
 	Timer::getTimer().update();
 	skyBox->update();
 	//alternative sytanx
@@ -430,7 +434,6 @@ void update()
 	{
 		(*iter)->update();
 	}
-
 	Input::getInput().update();
 }
 
@@ -458,11 +461,16 @@ void renderGameObject(GameObject * pObject)
 		GLint diffuseMatLocation = currentMaterial->getUniformLocation("diffuseMaterialColour");
 		GLint diffuseLightLocation = currentMaterial->getUniformLocation("diffuseLightColour");
 		GLint lightDirectionLocation = currentMaterial->getUniformLocation("lightDirection");
+		GLint lightPositionLocation = currentMaterial->getUniformLocation("lightPosition");
 		GLint specularMatLocation = currentMaterial->getUniformLocation("specularMaterialColour");
 		GLint specularLightLocation = currentMaterial->getUniformLocation("specularLightColour");
 		GLint specularpowerLocation = currentMaterial->getUniformLocation("specularPower");
 		GLint cameraPositionLocation = currentMaterial->getUniformLocation("cameraPosition");
 		GLint diffuseTextureLocation = currentMaterial->getUniformLocation("diffuseMap");
+		GLint constantAttenuationLocation = currentMaterial->getUniformLocation("constantAttenuation");
+		GLint linearAttenuationLocation = currentMaterial->getUniformLocation("linearAttenuation");
+		GLint quadraticAttenuationLocation = currentMaterial->getUniformLocation("quadraticAttenuation");
+		GLint attenuationLocation = currentMaterial->getUniformLocation("attenuation");
 		GLint specTextureLocation = currentMaterial->getUniformLocation("specMap");
 		GLint bumpTextureLocation = currentMaterial->getUniformLocation("bumpMap");
 		GLint heightTextureLocation = currentMaterial->getUniformLocation("heightMap");
@@ -477,10 +485,15 @@ void renderGameObject(GameObject * pObject)
 		vec4 diffuseMaterialColour = currentMaterial->getDiffuseColour();
 		vec4 specularMaterialColour = currentMaterial->getSpecularColour();
 		float specularPower = currentMaterial->getSpecularPower();
+		float attenuation = light->getAttenuation();
+		float constantAttenuation = light->getConstantAttenuation();
+		float linearAttenuation = light->getLinearAttenuation();
+		float quadraticAttenuation = light->getQuadraticAttenuation();
 
 		vec4 diffuseLightColour = light->getDiffuseColour();
 		vec4 specularLightColour = light->getSpecularColour();
 		vec3 lightDirection = light->getDirection();
+		vec3 lightPosition = light->getPosition();
 
 		vec3 cameraPosition = mainCamera->getTransform()->getPosition();
 
@@ -492,12 +505,17 @@ void renderGameObject(GameObject * pObject)
 		glUniform4fv(diffuseMatLocation, 1, glm::value_ptr(diffuseMaterialColour));
 		glUniform4fv(diffuseLightLocation, 1, glm::value_ptr(diffuseLightColour));
 		glUniform3fv(lightDirectionLocation, 1, glm::value_ptr(lightDirection));
+		glUniform3fv(lightPositionLocation, 1, glm::value_ptr(lightPosition));
 
 		glUniform4fv(specularMatLocation, 1, glm::value_ptr(specularMaterialColour));
 		glUniform4fv(specularLightLocation, 1, glm::value_ptr(specularLightColour));
 
 		glUniform3fv(cameraPositionLocation, 1, glm::value_ptr(cameraPosition));
 		glUniform1f(specularpowerLocation, specularPower);
+		glUniform1f(constantAttenuationLocation, constantAttenuation);
+		glUniform1f(linearAttenuationLocation, linearAttenuation);
+		glUniform1f(quadraticAttenuationLocation, quadraticAttenuation);
+		glUniform1f(attenuationLocation, attenuation);
 
 		glUniform1i(diffuseTextureLocation, 0);
 		glUniform1i(specTextureLocation, 1);
@@ -570,6 +588,7 @@ void render()
 }
 
 
+
 //Main Method
 int main(int argc, char * arg[])
 {
@@ -636,44 +655,44 @@ int main(int argc, char * arg[])
 	{
 		SDL_SetRelativeMouseMode(SDL_TRUE);
 		//While we still have events in the queue
-		while (SDL_PollEvent(&event)) 
+		while (SDL_PollEvent(&event))
 		{
 			switch (event.type)
 			{
 			case SDL_QUIT:
 			case SDL_WINDOWEVENT_CLOSE:
 			{
-				running = false;
-				break;
+										  running = false;
+										  break;
 			}
 			case SDL_KEYDOWN:
 			{
-				Input::getInput().getKeyboard()->setKeyDown(event.key.keysym.sym);
-				if (Input::getInput().getKeyboard()->isKeyDown(SDLK_ESCAPE))
-				{
-					running = false;
-				}
-				break;
+								Input::getInput().getKeyboard()->setKeyDown(event.key.keysym.sym);
+								if (Input::getInput().getKeyboard()->isKeyDown(SDLK_ESCAPE))
+								{
+									running = false;
+								}
+								break;
 			}
 			case SDL_KEYUP:
 			{
-				Input::getInput().getKeyboard()->setKeyUp(event.key.keysym.sym);
-				break;
+							  Input::getInput().getKeyboard()->setKeyUp(event.key.keysym.sym);
+							  break;
 			}
 			case SDL_MOUSEMOTION:
 			{
-				Input::getInput().getMouse()->setMousePosition(event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel);
-				currentRot.x -= Input::getInput().getMouse()->getRelativeMouseY()*Timer::getTimer().getDeltaTime()*m_LookSpeed;
-				currentRot.y -= Input::getInput().getMouse()->getRelativeMouseX()*Timer::getTimer().getDeltaTime()*m_LookSpeed;
-				break;
+									Input::getInput().getMouse()->setMousePosition(event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel);
+									currentRot.x -= Input::getInput().getMouse()->getRelativeMouseY()*Timer::getTimer().getDeltaTime()*m_LookSpeed;
+									currentRot.y -= Input::getInput().getMouse()->getRelativeMouseX()*Timer::getTimer().getDeltaTime()*m_LookSpeed;
+									break;
+			}
 			}
 		}
-	}
 
 		//Smooth
 		vec3 direction(cos(currentRot.x) * sin(currentRot.y),
 			sin(currentRot.x),
-			cos(currentRot.x) * cos(currentRot.y));	
+			cos(currentRot.x) * cos(currentRot.y));
 		if (Input::getInput().getKeyboard()->isKeyDown(SDLK_w))
 		{
 			forward = true;
@@ -733,12 +752,12 @@ int main(int argc, char * arg[])
 		m_AttachedCamera->getParent()->getTransform()->setRotation(currentRot.x, currentRot.y, currentRot.z);
 		m_AttachedCamera->setUp(up.x, up.y, up.z);
 		m_AttachedCamera->setLook(currentPos.x + direction.x, currentPos.y + direction.y, currentPos.z + direction.z);
-		
+
 		std::cout << currentRot.x;
 		update();
 		//render
 		render();
-}
+	}
 	CleanUp();
 	return 0;
 }
