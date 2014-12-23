@@ -58,7 +58,7 @@ const std::string MODEL_PATH = "models/";
 #include "Camera.h"
 #include "Light.h"
 #include "FBXLoader.h"
-#include "FPSCameraController.h"
+
 
 #include "SkyboxMaterial.h"
 
@@ -95,6 +95,30 @@ bool forward;
 bool backwards;
 bool left;
 bool rightM;
+
+//Transformations
+float shipRotX, earPosZ, earRotZ;
+float shipPosZ = 700.0f;
+float moonPosX, moonPosY, moonPosZ, moonRotX;
+float sunRotZ;
+float gateRotX, gateRotY;
+bool shipReached = false;
+
+//Earth crazynes
+//Just what they sound like
+	double dx;
+	double dy;
+	double ax;
+	double ay;
+	double vx;
+	double vy;
+	double angle_radians;
+	double D;
+	double A;
+	const double G = 0.000667; // universal gravity constant 
+	double M_s = 198900; // mass of sun; 
+	double M_e = 0.5974; // mass of earth 
+	float earthNewX;
 
 void CheckForErrors()
 {
@@ -307,7 +331,7 @@ void Initialise()
 	mainCamera->setName("MainCamera");
 
 	Transform *t = new Transform();
-	t->setPosition(0.0f, 0.0f, -5.0f);
+	t->setPosition(0.0f, 0.0f, -.0f);
 	mainCamera->setTransform(t);
 
 	c->setAspectRatio((float)(WINDOW_WIDTH / WINDOW_HEIGHT));
@@ -320,9 +344,6 @@ void Initialise()
 
 	mainCamera->setCamera(c);
 
-	//All input for the mouse and keyboard is mainly contrlled in the FPSCameraController class
-	//All changes to the cameras behaviour is handled in that class also
-
 	displayList.push_back(mainCamera);
 
 	mainLight = new GameObject();
@@ -330,9 +351,14 @@ void Initialise()
 
 	Light * light = new Light();
 	mainLight->setLight(light);
-	light->setPosition(0.0f, 0.0f, 1000.0f);
+	light->setPosition(0.0f, 0.0f, 500.0f);
 	displayList.push_back(mainLight);
 
+	GameObject *potatoCarrier = new GameObject;
+	Light *potato = new Light();
+	potatoCarrier->setLight(potato);
+	potato->setPosition(0.0f, 0.0f, -500.0f);
+	displayList.push_back(potatoCarrier);
 
 	//List of models being used in the scene
 	//Will want to put all of these into an array for convience
@@ -372,45 +398,47 @@ void Initialise()
 		//Set transforms using conditions, array starts at 0 remember!
 		//Station Transform
 		if (i == 0) {
-			go->getTransform()->setPosition(0.0f, 0.0f, 200.0f);
+			go->getTransform()->setPosition(20.0f, 30.0f, 500.0f);
+			go->getTransform()->setScale(0.2f, 0.2f, 0.2f);
 		}
 		//Gate 1 Transform
 		if (i == 1) {
-			go->getTransform()->setPosition(80.0f, 0.0f, 100.0f);
+			go->getTransform()->setPosition(50.0f, 0.0f, 550.0f);
 			go->getTransform()->setRotation(0.0f, 0.0f, 0.0f);
 		}
 		//Gate 2 Transform
 		if (i == 2){
-			go->getTransform()->setPosition(-80.0f, 0.0f, 300.0f);
+			go->getTransform()->setPosition(0.0f, 0.0f, 1000.0f);
 			go->getTransform()->setRotation(0.0f, 0.0f, 0.0f);
+			go->getTransform()->setScale(4.3f, 4.3f, 4.3f);
 		}
 		//Satellite Transform
 		if (i == 3){
 			go->getTransform()->setPosition(5.0f, 0.0f, 200.0f);
 			go->getTransform()->setRotation(0.0f, 45.0f, 0.0f);
-			go->getTransform()->setScale(0.01f, 0.01f, 0.01f);
+			go->getTransform()->setScale(0.05f, 0.05f, 0.05f);
 		}
 		//Space ship Transform
 		if (i == 4){
-			go->getTransform()->setPosition(0.0f, -5.0f, 200.0f);
+			go->getTransform()->setPosition(0.0f, 0.0f, 700.0f);
 			go->getTransform()->setRotation(0.0f, 0.0f, 0.0f);
-			go->getTransform()->setScale(0.002f, 0.002f, 0.002f);
+			go->getTransform()->setScale(0.005f, 0.005f, 0.005f);
 		}
 		//Sun Transform
 		if (i == 5){
-			go->getTransform()->setPosition(0.0f, 200.0f, 3000.0f);
-			go->getTransform()->setRotation(0.0f, 90.0f, 0.0f);
+			go->getTransform()->setPosition(0.0f, 0.0f, -1000.0f);
+			go->getTransform()->setRotation(0.0f, 0.0f, 0.0f);
 			go->getTransform()->setScale(1.0f, 1.0f, 1.0f);
 		}
 		//Earth Transform
 		if (i == 6){
-			go->getTransform()->setPosition(0.0f, 200.0f, 500.0f);
-			go->getTransform()->setRotation(0.0f, 20.0f, 0.0f);
+			go->getTransform()->setPosition(0.0f, 0.0f, 1000.0f);
+			go->getTransform()->setRotation(0.0f, 0.0f, 0.0f);
 			go->getTransform()->setScale(0.5f, 0.5f, 0.5f);
 		}
 		//Moon Transform
 		if (i == 7){
-			go->getTransform()->setPosition(-150.0f, -200.0f, 500.0f);
+			go->getTransform()->setPosition(50.0f, 0.0f, 550.0f);
 			go->getTransform()->setRotation(0.0f, 0.0f, 0.0f);
 			go->getTransform()->setScale(0.08f, 0.08f, 0.08f);
 		}
@@ -587,8 +615,71 @@ void render()
 	SDL_GL_SwapWindow(window);
 }
 
+void Translation()
+{ 
+	for (auto iter = displayList.begin(); iter != displayList.end(); iter++)
+	{
+		if ((*iter)->getName() == "Earth")
+		{
+			
+			(*iter)->getTransform()->setPosition(0, 0, 0);
+			(*iter)->getTransform()->setRotation(earthNewX, 0.0f, 0.0f);
+			(*iter)->getTransform()->setRotation(0.0f, 0.0f, (*iter)->getTransform()->getPosition().z + 1500.0f);
+		}
+	}
+}
 
-
+void Rotation()
+{
+	for (auto iter = displayList.begin(); iter != displayList.end(); iter++)
+	{
+		if ((*iter)->getName() == "Earth")
+		{
+			(*iter)->getTransform()->setRotation(-120.0f, 0.0f, earRotZ);
+		}
+		if ((*iter)->getName() == "Moon")
+		{
+			(*iter)->getTransform()->setRotation(0.0f, 0.0f, -earRotZ);
+		}
+		if ((*iter)->getName() == "Sun")
+		{
+			(*iter)->getTransform()->setRotation(-90.0f, 0.0f, sunRotZ);
+		}
+		if ((*iter)->getName() == "Gate1")
+		{
+			(*iter)->getTransform()->setRotation(90.0f, 0.0f, -earRotZ * 4);
+		}
+		if ((*iter)->getName() == "Gate2")
+		{
+			(*iter)->getTransform()->setRotation(90.0f, 0.0f, earRotZ * 4);
+		}
+		if ((*iter)->getName() == "Ship")
+		{
+			(*iter)->getTransform()->setPosition(0.0f, 0.0f, shipPosZ);
+			(*iter)->getTransform()->setRotation(shipRotX, 0.0f, 0.0f);
+		}
+		if (shipPosZ < 950.0f && !shipReached)
+		{
+			shipPosZ += 0.005f;
+		}
+		if (shipPosZ == 940.0f)
+		{
+			shipReached = true;
+			(*iter)->getTransform()->setRotation(180.0f, 0.0f, 0.0f);
+		}
+		if (shipPosZ > 550.0f && shipReached)
+		{
+			shipPosZ -= 0.005f;
+		}
+		if (shipPosZ == 530)
+		{
+			shipReached = false;
+			(*iter)->getTransform()->setRotation(0.0f, 0.0f, 0.0f);
+		}
+		sunRotZ += 0.01f;
+		earRotZ += 0.005f;
+	}
+}
 //Main Method
 int main(int argc, char * arg[])
 {
@@ -662,29 +753,29 @@ int main(int argc, char * arg[])
 			case SDL_QUIT:
 			case SDL_WINDOWEVENT_CLOSE:
 			{
-										  running = false;
-										  break;
+				running = false;
+				break;
 			}
 			case SDL_KEYDOWN:
 			{
-								Input::getInput().getKeyboard()->setKeyDown(event.key.keysym.sym);
-								if (Input::getInput().getKeyboard()->isKeyDown(SDLK_ESCAPE))
-								{
-									running = false;
-								}
-								break;
+				Input::getInput().getKeyboard()->setKeyDown(event.key.keysym.sym);
+				if (Input::getInput().getKeyboard()->isKeyDown(SDLK_ESCAPE))
+				{
+					running = false;
+				}
+				break;
 			}
 			case SDL_KEYUP:
 			{
-							  Input::getInput().getKeyboard()->setKeyUp(event.key.keysym.sym);
-							  break;
+				Input::getInput().getKeyboard()->setKeyUp(event.key.keysym.sym);
+				 break;
 			}
 			case SDL_MOUSEMOTION:
 			{
-									Input::getInput().getMouse()->setMousePosition(event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel);
-									currentRot.x -= Input::getInput().getMouse()->getRelativeMouseY()*Timer::getTimer().getDeltaTime()*m_LookSpeed;
-									currentRot.y -= Input::getInput().getMouse()->getRelativeMouseX()*Timer::getTimer().getDeltaTime()*m_LookSpeed;
-									break;
+				Input::getInput().getMouse()->setMousePosition(event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel);
+				currentRot.x -= Input::getInput().getMouse()->getRelativeMouseY()*Timer::getTimer().getDeltaTime()*m_LookSpeed;
+				currentRot.y -= Input::getInput().getMouse()->getRelativeMouseX()*Timer::getTimer().getDeltaTime()*m_LookSpeed;
+				break;
 			}
 			}
 		}
@@ -693,6 +784,7 @@ int main(int argc, char * arg[])
 		vec3 direction(cos(currentRot.x) * sin(currentRot.y),
 			sin(currentRot.x),
 			cos(currentRot.x) * cos(currentRot.y));
+		vec3 right = vec3(sin(currentRot.y - 3.14f / 2.0f), 0, cos(currentRot.y - 3.14 / 2.0f));
 		if (Input::getInput().getKeyboard()->isKeyDown(SDLK_w))
 		{
 			forward = true;
@@ -753,7 +845,8 @@ int main(int argc, char * arg[])
 		m_AttachedCamera->setUp(up.x, up.y, up.z);
 		m_AttachedCamera->setLook(currentPos.x + direction.x, currentPos.y + direction.y, currentPos.z + direction.z);
 
-		std::cout << currentRot.x;
+
+		Rotation();
 		update();
 		//render
 		render();

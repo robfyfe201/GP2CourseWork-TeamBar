@@ -21,6 +21,7 @@ public:
 	void setPosition(float x, float y, float z);
 	void setRotation(float x, float y, float z);
 	void setScale(float x, float y, float z);
+	void transformAroundPoint(float angle, float x, float y, float z);
 
 	vec3& getPosition();
 	vec3& getScale();
